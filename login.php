@@ -17,7 +17,7 @@
 
 <!-- index.php -->
 <?php include 'front/general/header.php'; ?>
-<?php include 'front/index/body.php'; ?>
+<?php include 'front/login/bodyLogin.php'; ?>
 <?php include 'front/general/footer.php'; ?>
 
 <!-- Optional JavaScript; choose one of the two! -->

@@ -1,62 +1,432 @@
 
 <style>
+    /* Estilos para el nuevo carrusel */
+    #heroCarousel {
+        border-radius: 20px;
+        overflow: hidden;
+        max-height: 450px;
+    }
+
+    #heroCarousel .carousel-item img {
+        width: 100%;
+        height: 450px;
+        object-fit: cover; /* Asegura que la imagen cubra el espacio sin deformarse */
+    }
+
+    /* Estilos para los indicadores (los puntos de abajo) */
+    #heroCarousel .carousel-indicators button {
+        width: 10px;
+        height: 10px;
+        border-radius: 100%;
+        background-color: #d8d8d8; /* Color para los inactivos */
+        border: none;
+        margin: 0 5px;
+    }
+
+    #heroCarousel .carousel-indicators .active {
+        background-color: #4EAE3E; /* Color para el activo */
+    }
+
+
+    /* Estilos existentes */
     .bg-green {
-        background-color: #4CAF50; /* Ajusta el tono del verde según la imagen de referencia */
-        border-radius: 10px 0 0 10px; /* Redondeo solo en la izquierda */
+        background-color: #4EAE3E;
+        border-radius: 10px 0 0 10px;
     }
 
-    h1 {
-        font-size: 2rem; /* Tamaño ajustable */
-        line-height: 1.4;
+    .promo-box {
+        height: 200px;
+        display: flex;
+        padding: 20px;
     }
 
-    p {
-        font-size: 0.875rem; /* Tamaño del texto más pequeño */
+    .bg-pink { background-color: #ffe4e4; }
+    .bg-yellow { background-color: #fff5d7; }
+    .bg-lightgreen { background-color: #eaffd6; }
+    .bg-lightblue { background-color: #d6f0ff; }
+
+    .promo-box img.promo-img {
+        max-width: 150px;
+        max-height: 150px;
+        object-fit: contain;
     }
-
-    .img-fluid {
-        object-fit: cover; /* Asegura que la imagen no se deforme */
-        border-radius: 0 10px 10px 0; /* Redondeo solo en la derecha */
-    }
-
-    @media (max-width: 768px) {
-        .row {
-            flex-direction: column;
-        }
-
-        .bg-green {
-            border-radius: 10px 10px 0 0; /* Redondeo para móviles */
-        }
-
-        .img-fluid {
-            border-radius: 0 0 10px 10px; /* Redondeo para móviles */
-        }
-    }
-
 </style>
 
+<div class="container my-5">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
 
-<!-- front/index/body.php -->
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="front/multimedia/Header.svg" class="d-block w-100" alt="Productos frescos y orgánicos">
+            </div>
+            <div class="carousel-item">
+                <img src="front/multimedia/nosotros1.png" class="d-block w-100" alt="Nuestra misión contigo">
+            </div>
+            <div class="carousel-item">
+                <img src="front/multimedia/tienda.png" class="d-block w-100" alt="Verduras en la tienda">
+            </div>
+        </div>
 
-<div class="container my-5 text-center">
-    <!-- Imagen Principal -->
-    <div class="mb-4">
-        <img src="front/multimedia/Header.svg" class="img-fluid rounded" alt="Productos Orgánicos">
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
+</div>
 
-    <!-- Texto Principal -->
+
+<div class="container text-center mb-5">
     <h2 class="display-5 fw-bold mb-3">
         Los mejores productos orgánicos de raíz en un solo lugar.
     </h2>
     <p class="lead mb-4">
         ¡Bienvenido a Roots! Explora nuestra variedad de alimentos naturales y orgánicos cuidadosamente seleccionados para ofrecerte lo mejor de la naturaleza.
     </p>
-
-    <!-- Botón de Acción -->
-    <a href="#" class="btn btn-success btn-lg px-4 rounded-pill">
+    <a href="tienda.php" class="btn btn-success btn-lg px-4 rounded-pill">
         Comprar Aquí
     </a>
 </div>
+
+<div class="container my-5 bg-green">
+</div>
+
+<div class="container my-5">
+</div>
+
+<div class="container my-5 text-center">
+</div>
+
+<div class="container my-5">
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+
+
+    /* --- NUEVOS ESTILOS PARA DEPARTAMENTOS --- */
+    .departments-section {
+        padding: 2rem 0;
+    }
+
+    .departments-title {
+        color: #4EAE3E;
+        font-weight: bold;
+        margin-bottom: 2rem;
+    }
+
+    .department-item img {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        border: 3px solid #f2ece9;
+    }
+
+    .department-item:hover img {
+        transform: scale(1.05);
+    }
+
+    .department-item p {
+        color: #4EAE3E;
+        font-weight: 600;
+        margin-top: 1rem;
+        font-size: 1.1rem;
+    }
+
+    /* Estilos existentes */
+    .bg-green {
+        background-color: #4EAE3E;
+        border-radius: 10px 0 0 10px;
+    }
+
+    .promo-box {
+        height: 200px;
+        display: flex;
+        padding: 20px;
+    }
+
+    .bg-pink { background-color: #ffe4e4; }
+    .bg-yellow { background-color: #fff5d7; }
+    .bg-lightgreen { background-color: #eaffd6; }
+    .bg-lightblue { background-color: #d6f0ff; }
+
+    .promo-box img.promo-img {
+        max-width: 150px;
+        max-height: 150px;
+        object-fit: contain;
+    }
+</style>
+
+
+
+
+<div class="container text-center departments-section">
+    <h2 class="departments-title">Departamentos</h2>
+    <div class="row gy-4 justify-content-center">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/frutas.png" alt="Frutas y verduras">
+                <p>Frutas y verduras</p>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/nosotros2.png" alt="Despensa">
+                <p>Despensa</p>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/receta1.jpg" alt="Carnes y pescados">
+                <p>Carnes y pescados</p>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/nosotros3.png" alt="100% organic">
+                <p>100% organic</p>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/foto.jpg" alt="Saludables">
+                <p>Saludables</p>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="#" class="text-decoration-none department-item">
+                <img src="front/multimedia/tienda.png" alt="Gourmet">
+                <p>Gourmet</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5 bg-green">
+</div>
+
+<div class="container my-5">
+</div>
+
+<div class="container my-5 text-center">
+</div>
+
+<div class="container my-5">
+</div>
+
+
+
+
+<style>
+
+
+    /* --- NUEVOS ESTILOS PARA PRODUCTOS TOP --- */
+    .top-products-section {
+        padding: 2rem 0;
+    }
+    .product-card-top {
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .product-card-top:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .product-card-top img {
+        max-height: 150px;
+        object-fit: contain;
+        margin-bottom: 1rem;
+    }
+    .product-card-top h5 {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    .quantity-selector {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .quantity-selector button {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        color: #555;
+        width: 30px;
+        height: 30px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .quantity-selector input {
+        width: 40px;
+        text-align: center;
+        border: 1px solid #ddd;
+        height: 30px;
+        margin: 0 5px;
+    }
+    .btn-add-cart {
+        background-color: #4EAE3E;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        width: 100%;
+        font-weight: 600;
+    }
+    .shop-cta {
+        margin-top: 3rem;
+    }
+    .shop-cta h4 {
+        color: #4EAE3E;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+    .btn-shop-now {
+        background-color: #4EAE3E;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+
+
+
+<div class="container text-center top-products-section">
+    <h2 class="section-title">Productos top</h2>
+    <div class="row gy-4">
+        <div class="col-6 col-md-3">
+            <div class="product-card-top">
+                <img src="front/multimedia/kiwi.png" alt="Plátano"> <h5>Plátano</h5>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" data-action="decrement">-</button>
+                    <input type="text" class="quantity-input" value="1" readonly>
+                    <button class="quantity-btn" data-action="increment">+</button>
+                </div>
+                <button class="btn-add-cart">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="product-card-top">
+                <img src="front/multimedia/papaya.png" alt="Fresa"> <h5>Fresa</h5>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" data-action="decrement">-</button>
+                    <input type="text" class="quantity-input" value="1" readonly>
+                    <button class="quantity-btn" data-action="increment">+</button>
+                </div>
+                <button class="btn-add-cart">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="product-card-top">
+                <img src="front/multimedia/pera.png" alt="Naranja"> <h5>Naranja</h5>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" data-action="decrement">-</button>
+                    <input type="text" class="quantity-input" value="1" readonly>
+                    <button class="quantity-btn" data-action="increment">+</button>
+                </div>
+                <button class="btn-add-cart">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="product-card-top">
+                <img src="front/multimedia/chile.png" alt="Pepino"> <h5>Pepino</h5>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" data-action="decrement">-</button>
+                    <input type="text" class="quantity-input" value="1" readonly>
+                    <button class="quantity-btn" data-action="increment">+</button>
+                </div>
+                <button class="btn-add-cart">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="shop-cta">
+        <h4>COMPRA TUS PRODUCTOS FAVORITOS EN NUESTRA TIENDA</h4>
+        <a href="tienda.php" class="btn btn-shop-now">COMPRAR AHORA</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantityButtons = document.querySelectorAll('.quantity-btn');
+
+        quantityButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const action = this.getAttribute('data-action');
+                const input = this.parentElement.querySelector('.quantity-input');
+                let value = parseInt(input.value);
+
+                if (action === 'increment') {
+                    value++;
+                } else if (action === 'decrement' && value > 1) {
+                    value--;
+                }
+                input.value = value;
+            });
+        });
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- Esquema Div Principal -->
 <div class="container my-5 bg-green">
@@ -129,178 +499,6 @@
     </div>
 </div>
 
-<style>
-    .bg-pink {
-        background-color: #ffe4e4;
-    }
-
-    .bg-yellow {
-        background-color: #fff5d7;
-    }
-
-    .bg-lightgreen {
-        background-color: #eaffd6;
-    }
-
-    .bg-lightblue {
-        background-color: #d6f0ff;
-    }
-
-    .promo-box {
-        height: 200px;
-        display: flex;
-        padding: 20px;
-    }
-
-    .promo-box img.promo-img {
-        max-width: 150px;
-        max-height: 150px;
-        object-fit: contain;
-    }
-
-    .promo-box h4 {
-        font-size: 1.5rem;
-    }
-
-    .promo-box p {
-        font-size: 1rem;
-    }
-
-    .btn-success {
-        background-color: #198754;
-        border-color: #198754;
-    }
-
-    /* Ajustes para versión móvil */
-    @media (max-width: 768px) {
-        .promo-box {
-            flex-direction: column;
-            height: auto;
-            text-align: center;
-        }
-
-        .promo-box img.promo-img {
-            margin-top: 15px;
-            max-width: 100%;
-        }
-    }
-</style>
-
-
-<!-- Carrusel de Productos Top -->
-
-<div class="container my-5 text-center">
-    <h2 class="fw-bold" style="color: #2d4c48;">Productos Top</h2>
-</div>
-
-<div class="container my-5">
-    <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <!-- Primer Slide para Móvil -->
-            <div class="carousel-item active d-block d-md-none">
-                <div class="row justify-content-center">
-                    <div class="col-12">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/kiwi.png" class="card-img-top img-fluid" alt="Kiwi Orgánico" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Kiwi Orgánico</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Primer Slide para Escritorio -->
-            <div class="carousel-item active d-none d-md-block">
-                <div class="row justify-content-center g-3">
-                    <div class="col-3">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/kiwi.png" class="card-img-top img-fluid" alt="Kiwi Orgánico" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Kiwi Orgánico</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/papaya.png" class="card-img-top img-fluid" alt="Papaya Orgánica" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Papaya Orgánica</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/kiwi.png" class="card-img-top img-fluid" alt="Kiwi Orgánico" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Kiwi Orgánico</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/papaya.png" class="card-img-top img-fluid" alt="Papaya Orgánica" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Papaya Orgánica</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Más tarjetas se agregan aquí para Escritorio -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Controles del Carrusel -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-    </div>
-</div>
 
 
 
