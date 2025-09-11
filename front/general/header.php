@@ -35,6 +35,7 @@
     }
     .header-actions .btn-login:hover {
         background-color: #4EAE3E;
+
     }
     .header-actions i {
         font-size: 1.5rem;
@@ -51,7 +52,7 @@
         color: white;
         font-weight: bold;
         margin: 0 20px;
-        font-size: 1.1rem;
+        font-size: 1.5rem;
     }
 
     /* Ajustes para el Menú Móvil */
