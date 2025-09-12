@@ -84,7 +84,7 @@
 
         <div class="divider">o</div>
 
-        <a href="auth.php?action=login_google" class="btn btn-google d-flex align-items-center justify-content-center">
+        <a href="back/login/aut.php?action=login_google" class="btn btn-google d-flex align-items-center justify-content-center">
             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
             Continuar con Google
         </a>
