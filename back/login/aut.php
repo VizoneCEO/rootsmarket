@@ -11,8 +11,8 @@ require_once 'vendor/autoload.php';
 
 // Configuración de Google
 $googleClient = new Google_Client();
-$googleClient->setClientId('TU_CLIENT_ID_DE_GOOGLE');
-$googleClient->setClientSecret('TU_CLIENT_SECRET_DE_GOOGLE');
+$googleClient->setClientId('1034619608714-38jjhagukll7qv3us12demuf1qs0r5ma.apps.googleusercontent.com');
+$googleClient->setClientSecret('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');
 // La URL de redireccionamiento debe coincidir con la que configuraste en la consola de Google
 $googleClient->setRedirectUri('http://localhost/roots/back/login/auth.php?action=google_callback');
 $googleClient->addScope('email');
