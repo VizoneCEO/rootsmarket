@@ -1,142 +1,64 @@
+<?php
+// Iniciar la sesión para poder acceder a los datos del usuario
+session_start();
+
+// Si no hay una sesión de usuario iniciada, redirigir al login
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../../login.php');
+    exit();
+}
+
+// --- LÓGICA DE BASE DE DATOS MOVIDA AQUÍ (LA PARTE QUE DABA ERROR) ---
+require_once(__DIR__ . '/../../back/conection/db.php');
+
+$userId = $_SESSION['user_id'];
+
+// Consultar la base de datos para obtener la información completa del usuario
+$stmt = $pdo->prepare("SELECT nombre, email FROM usuarios WHERE id = ?");
+$stmt->execute([$userId]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Si el usuario fue borrado de la BD pero su sesión sigue activa, lo sacamos.
+if (!$user) {
+    session_destroy();
+    header('Location: ../../login.php?error=user_not_found');
+    exit();
+}
+// --- FIN DE LA LÓGICA DE BASE DE DATOS ---
+?>
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body {
-            background-color: #f2ece9;
-        }
-
-        .navbar {
-            background-color: #f2ece9;
-        }
-
-        .search-bar {
-            border-radius: 20px;
-            width: 250px;
-            border: 1px solid #ccc;
-        }
-
-        .navbar-brand img {
-            height: 40px;
-        }
-
-        .btn-login {
-            background-color: #2d4c48;
-            color: white;
-            border-radius: 20px;
-            padding: 5px 20px;
-            font-weight: bold;
-        }
-
-        .btn-login:hover {
-            background-color: #1d3331;
-            color: white;
-        }
-
-        .nav-icons i {
-            font-size: 1.2rem;
-            color: #2d4c48;
-            margin-left: 15px;
-        }
-
-        .nav-icons i:hover {
-            color: #1d3331;
-        }
-
-        .nav-links {
-            background-color: white;
-            padding: 10px 0;
-        }
-
-        .nav-links .nav-link {
-            font-weight: bold;
-            color: #2d4c48;
-            margin: 0 20px;
-        }
-
-        .nav-links .nav-link:hover {
-            color: #1d3331;
-        }
-
-        @media (max-width: 992px) {
-            .search-bar {
-                width: 100%;
-            }
-
-            .navbar .btn-login,
-            .nav-icons {
-                display: none;
-            }
-
-            .navbar-toggler {
-                border: none;
-            }
-
-            .navbar-toggler:focus {
-                box-shadow: none;
-            }
-
-            .nav-links .nav-link {
-                display: block;
-                text-align: center;
-            }
-        }
-
-        .text-green {
-            color: #2d4c48;
-        }
-
-        .bg-light {
-            background-color: #f8f9fa;
-        }
-
-        .shadow-sm {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        }
-
-        a.text-dark:hover {
-            color: #2d4c48;
-        }
-
-        .fw-bold {
-            font-weight: bold;
-        }
-
-        i {
-            font-size: 1.2rem;
-        }
-
+        body { background-color: #f2ece9; }
+        .text-green { color: #2d4c48; }
+        .bg-light { background-color: #f8f9fa !important; }
+        .shadow-sm { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        a.text-dark:hover { color: #2d4c48 !important; }
+        .fw-bold { font-weight: bold !important; }
+        .profile-menu i { font-size: 1.2rem; }
+        hr { border-top: 1px solid #ccc; }
     </style>
-    <title>Roots</title>
+    <title>Roots - Mi Perfil</title>
 </head>
 <body>
 
+    <?php include '../general/headerb.php'; ?>
 
-<!-- index.php -->
-<?php include '../general/header.php'; ?>
-<?php include 'body.php'; ?>
-<?php include '../general/footer.php'; ?>
+    <?php
+        // Ahora incluimos el body. El body ya tendrá acceso a la variable $user que creamos arriba.
+        include 'body.php';
+    ?>
 
-<!-- Optional JavaScript; choose one of the two! -->
+    <?php include '../general/footer.php'; ?>
 
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
-
-
-
-<!-- Option 2: Separate Popper and Bootstrap JS -->
-<!--
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
--->
 </body>
 </html>
