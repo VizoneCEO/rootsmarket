@@ -1,20 +1,25 @@
 <?php
+
+// ---- AÑADE ESTAS LÍNEAS AL INICIO ----
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+// ------------------------------------
+
 // Iniciar la sesión en la parte superior de tu script
 session_start();
 
 // El archivo db.php debe estar en el mismo directorio que aut.php para que funcione esta ruta
-require_once(__DIR__ . '/db.php');
-
+require_once(__DIR__ . '/../conection/db.php');
 // Incluir la librería de cliente de Google para PHP.
 // Es un proceso más complejo que requiere el SDK de Google, instalado vía Composer.
-require_once 'vendor/autoload.php';
-
+require_once(__DIR__ . '/../../vendor/autoload.php');
 // Configuración de Google
 $googleClient = new Google_Client();
 $googleClient->setClientId('1034619608714-38jjhagukll7qv3us12demuf1qs0r5ma.apps.googleusercontent.com');
 $googleClient->setClientSecret('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');
 // La URL de redireccionamiento debe coincidir con la que configuraste en la consola de Google
-$googleClient->setRedirectUri('http://localhost/roots/back/login/auth.php?action=google_callback');
+$googleClient->setRedirectUri('http://localhost/rootsmarket/back/login/aut.php?action=google_callback');
 $googleClient->addScope('email');
 $googleClient->addScope('profile');
 
@@ -44,7 +49,7 @@ if (isset($_GET['action'])) {
                     $_SESSION['user_role'] = $user['rol_id'];
 
                     // Redirigir al perfil del usuario
-                    header('Location: ../../perfil.php');
+                    header('Location: ../../front/cliente/perfil.php');
                     exit();
                 } else {
                     header('Location: ../../login.php?error=credentials');
@@ -81,7 +86,7 @@ if (isset($_GET['action'])) {
                     // El usuario existe, iniciar sesión
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_name'] = $user['nombre'];
-                    header('Location: ../../perfil.php');
+                    header('Location: ../../front/cliente/perfil.php');
                     exit();
                 } else {
                     // El usuario no existe, registrar uno nuevo
@@ -93,7 +98,7 @@ if (isset($_GET['action'])) {
                     if ($stmt->execute([$rol['id'], $name, $email, $google_id])) {
                         $_SESSION['user_id'] = $pdo->lastInsertId();
                         $_SESSION['user_name'] = $name;
-                        header('Location: ../../perfil.php');
+                        header('Location: ../../front/cliente/perfil.php');
                         exit();
                     } else {
                         header('Location: ../../login.php?error=db_error');

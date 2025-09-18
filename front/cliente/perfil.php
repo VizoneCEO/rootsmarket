@@ -121,9 +121,9 @@
 
 
 <!-- index.php -->
-<?php include 'front/general/header.php'; ?>
-<?php include 'front/perfil/body.php'; ?>
-<?php include 'front/general/footer.php'; ?>
+<?php include '../general/header.php'; ?>
+<?php include 'body.php'; ?>
+<?php include '../general/footer.php'; ?>
 
 <!-- Optional JavaScript; choose one of the two! -->
 
