@@ -31,7 +31,7 @@ function redirigirPorRol($rol) {
             header('Location: ../../front/cliente/perfil.php');
             break;
         case 'administrador':
-            header('Location: ../../admin/dashboard.php'); // Debes crear esta ruta
+            header('Location: ../../front/admin/perfilAdmin.php'); // Debes crear esta ruta
             break;
         case 'deliver':
             header('Location: ../../deliver/pedidos.php'); // Debes crear esta ruta
