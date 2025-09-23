@@ -19,7 +19,7 @@ $googleClient = new Google_Client();
 $googleClient->setClientId('1034619608714-38jjhagukll7qv3us12demuf1qs0r5ma.apps.googleusercontent.com');
 $googleClient->setClientSecret('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');
 // La URL de redireccionamiento debe coincidir con la que configuraste en la consola de Google
-$googleClient->setRedirectUri('http://localhost/rootsmarket/back/login/aut.php?action=google_callback');
+$googleClient->setRedirectUri('https://rootsmarket.com.mx/back/login/aut.php?action=google_callback');
 $googleClient->addScope('email');
 $googleClient->addScope('profile');
 
