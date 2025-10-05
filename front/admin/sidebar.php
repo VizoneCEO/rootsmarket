@@ -41,7 +41,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../back/login/aut.php?action=logout">
+                <a class="nav-link" href="../../back/login/aut.php?action=logout">
                     <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                 </a>
             </li>
