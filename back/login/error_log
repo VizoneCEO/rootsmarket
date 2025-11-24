@@ -1,0 +1,55 @@
+[16-Sep-2025 21:25:36 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[16-Sep-2025 21:25:36 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[16-Sep-2025 23:42:37 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[16-Sep-2025 23:42:37 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[16-Sep-2025 23:42:42 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[16-Sep-2025 23:42:42 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:57:46 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:57:46 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:58:30 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:58:30 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:58:47 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 15:58:47 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:44:14 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:44:14 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:44:37 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:44:37 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:48:27 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 20:48:27 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 21:02:56 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[17-Sep-2025 21:02:56 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php on line 6
+[23-Sep-2025 02:16:18 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[28000] [1045] Access denied for user 'root'@'localhost' (using password: NO) in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/conection/db.php:25
+Stack trace:
+#0 /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/login/aut.php(13): require_once()
+#1 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/conection/db.php on line 25

@@ -1,0 +1,10 @@
+[04-Oct-2025 17:24:58 UTC] PHP Warning:  Undefined variable $nombre in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/catalog_manager.php on line 34
+[04-Oct-2025 17:24:58 UTC] PHP Warning:  Undefined variable $descripcion in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/catalog_manager.php on line 34
+[04-Oct-2025 17:24:58 UTC] PHP Warning:  Undefined variable $estatus in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/catalog_manager.php on line 34
+[04-Oct-2025 17:24:58 UTC] PHP Warning:  Undefined variable $imagen_url in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/catalog_manager.php on line 34
+[04-Oct-2025 18:37:13 UTC] PHP Warning:  require_once(/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/connection/db.php): Failed to open stream: No such file or directory in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/product_manager.php on line 5
+[04-Oct-2025 18:37:13 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/connection/db.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/product_manager.php:5
+Stack trace:
+#0 {main}
+  thrown in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/product_manager.php on line 5
+[16-Oct-2025 18:16:09 UTC] PHP Warning:  Undefined variable $new_imagen_url in /home/n3j51z7x8xqp/public_html/rootsmarket.com.mx/back/catalog_manager.php on line 83
