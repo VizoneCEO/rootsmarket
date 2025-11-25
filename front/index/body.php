@@ -44,7 +44,8 @@ try {
         text-align: center;
         color: white;
         padding: 20px;
-        background-image: url('front/multimedia/Header.svg'); /* Opcional: Fondo sutil */
+        /* Ajuste de ruta para la imagen de fondo (sin barra inicial) */
+        background-image: url('front/multimedia/fondo1.png');
         background-size: cover;
         background-position: center;
     }
@@ -116,28 +117,35 @@ try {
     .card-medium { min-height: 250px; }
 
     /* --- CATEGORIAS --- */
+    /* --- ACTUALIZACIÓN CATEGORÍAS (ESTILO FIGMA) --- */
     .cat-card {
-        background-color: #EFEFEF;
-        border-radius: 30px;
-        height: 350px;
+        background-color: #f0f0f0; /* Color de fondo por si la imagen tarda en cargar */
+        border-radius: 28px; /* Bordes muy redondeados como en el diseño */
+        height: 420px; /* Altura fija para que se vean altas y elegantes */
         position: relative;
-        margin-bottom: 1rem;
-        overflow: hidden;
-        display: block; /* Para que el enlace ocupe todo */
+        margin-bottom: 1.2rem;
+        overflow: hidden; /* Para que la imagen respete el borde redondeado */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03); /* Sombra muy sutil */
+        display: block;
     }
+
     .cat-card img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: cover; /* La imagen llena todo el cuadro sin deformarse */
         transition: transform 0.5s ease;
     }
-    .cat-card:hover img { transform: scale(1.05); }
+
+    .cat-card:hover img {
+        transform: scale(1.03); /* Zoom suave al pasar el mouse */
+    }
+
     .cat-label {
         text-align: center;
-        margin-top: 15px;
-        color: #444;
-        font-weight: 600;
-        font-size: 1.1rem;
+        color: #333;
+        font-weight: 500;
+        font-size: 1.2rem; /* Texto un poco más grande */
+        margin-top: 5px;
     }
 
     /* --- PRODUCT CARDS (LO MEJOR DE ROOTS) --- */
@@ -211,57 +219,87 @@ try {
 
     <div class="row g-4">
         <div class="col-md-4">
-            <a href="tienda.php?cat=temporada" class="gray-card card-tall" style="background-image: url('front/multimedia/frutas.png');">
-                <span class="bg-dark text-white px-3 py-1 rounded-pill bg-opacity-75">Temporada</span>
+            <a href="tienda.php?cat=temporada" class="gray-card card-tall"
+               style="background-image: url('front/multimedia/d1.png'); position: relative;">
+                <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Temporada</span>
             </a>
         </div>
 
         <div class="col-md-4">
             <div class="d-flex flex-column h-100 gap-4">
-                <a href="tienda.php?filter=nuevos" class="gray-card card-medium" style="background-color: #8D6E63;">
-                    Nuevos Productos
+                <a href="tienda.php?filter=nuevos" class="gray-card card-medium"
+                   style="background-image: url('front/multimedia/d2.png'); position: relative;">
+                    <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Nuevos Productos</span>
                 </a>
-                <a href="nosotros.php" class="gray-card card-medium" style="background-color: #5D4037;">
-                    Campañas de impacto
+                <a href="nosotros.php" class="gray-card card-medium"
+                   style="background-image: url('front/multimedia/d3.png'); position: relative;">
+                    <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Campañas de impacto</span>
                 </a>
             </div>
         </div>
 
         <div class="col-md-4">
-            <a href="tienda.php?filter=ofertas" class="gray-card card-tall" style="background-color: #3E2723;">
-                Descuentos
+            <a href="tienda.php?filter=ofertas" class="gray-card card-tall"
+               style="background-image: url('front/multimedia/d4.png'); position: relative;">
+                <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Descuentos</span>
             </a>
         </div>
     </div>
 </div>
 
+
 <div class="container section-padding">
-    <div class="d-flex justify-content-between align-items-end mb-4">
-        <h2 class="section-title">Compra por Categoría</h2>
-        <p class="text-end text-muted small d-none d-md-block">
-            Hicimos la selección por ti:<br>alimentos, bebidas, cuidado personal y más.
-        </p>
+
+    <div class="row align-items-end mb-5">
+        <div class="col-md-6">
+            <h2 class="section-title mb-0" style="font-size: 2rem; letter-spacing: 0.5px;">COMPRA POR CATEGORÍA</h2>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <p class="text-muted m-0" style="font-size: 1rem; line-height: 1.5;">
+                Hicimos la selección por ti:<br>
+                Alimentos, bebidas, cuidado personal y más.
+            </p>
+        </div>
     </div>
 
     <div class="row g-4">
-        <?php if (!empty($categorias)): ?>
-            <?php foreach ($categorias as $cat): ?>
-                <div class="col-6 col-md-3">
-                    <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="text-decoration-none">
-                        <div class="cat-card">
-                            <?php if (!empty($cat['imagen_url'])): ?>
-                                <img src="<?php echo htmlspecialchars($cat['imagen_url']); ?>" alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
-                            <?php else: ?>
-                                <div class="d-flex align-items-center justify-content-center h-100 text-muted bg-light">Sin Imagen</div>
-                            <?php endif; ?>
-                        </div>
-                        <p class="cat-label"><?php echo htmlspecialchars($cat['nombre']); ?></p>
-                    </a>
+
+        <div class="col-6 col-md-3">
+            <a href="tienda.php?cat=frutas" class="text-decoration-none">
+                <div class="cat-card">
+                    <img src="front/multimedia/t1.png" alt="Frutas y verduras">
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="col-12 text-center text-muted">No hay categorías activas para mostrar.</div>
-        <?php endif; ?>
+                <p class="cat-label">Frutas y verduras</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="tienda.php?cat=pan" class="text-decoration-none">
+                <div class="cat-card">
+                    <img src="front/multimedia/t2.png" alt="Pan, Cereales y Granos">
+                </div>
+                <p class="cat-label">Pan, Cereales y Granos</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="tienda.php?cat=limpieza" class="text-decoration-none">
+                <div class="cat-card">
+                    <img src="front/multimedia/t3.png" alt="Limpieza del Hogar">
+                </div>
+                <p class="cat-label">Limpieza del Hogar</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="tienda.php?cat=carnes" class="text-decoration-none">
+                <div class="cat-card">
+                    <img src="front/multimedia/t4.png" alt="Carnes, Pescados y Huevo">
+                </div>
+                <p class="cat-label">Carnes, Pescados y Huevo</p>
+            </a>
+        </div>
+
     </div>
 </div>
 
@@ -286,9 +324,9 @@ try {
 
                             <a href="producto.php?id=<?php echo $prod['id']; ?>">
                                 <?php if (!empty($prod['imagen_principal'])): ?>
-                                    <img src="<?php echo htmlspecialchars($prod['imagen_principal']); ?>" alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>" alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
                                 <?php else: ?>
-                                    <img src="front/multimedia/productos/default.png" alt="Producto sin imagen">
+                                    <img src="front/multimedia/productos.png" alt="Producto sin imagen">
                                 <?php endif; ?>
                             </a>
                         </div>
@@ -306,7 +344,15 @@ try {
                                     <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php endif; ?>
                             </div>
-                            <button class="add-btn-circle" onclick="alert('Producto agregado (simulación)')"><i class="fas fa-plus"></i></button>
+                            <button class="add-btn-circle"
+        onclick="addToCart(
+            <?php echo $prod['id']; ?>,
+            '<?php echo htmlspecialchars($prod['nombre']); ?>',
+            <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
+            '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
+        )">
+    <i class="fas fa-plus"></i>
+</button>
                         </div>
                     </div>
                 </div>
@@ -316,6 +362,65 @@ try {
         <?php endif; ?>
     </div>
 </div>
+
+
+
+
+<div class="container mb-5">
+    <div class="p-5 rounded-3 text-white d-flex align-items-center"
+         style="
+            background-image: url('front/multimedia/fondo3.png');
+            background-size: cover;
+            background-position: center;
+            min-height: 450px;
+            position: relative;
+            overflow: hidden;
+         ">
+
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 1;"></div>
+
+        <div class="row w-100 position-relative" style="z-index: 2;">
+            <div class="col-lg-5 mb-4 mb-lg-0">
+                <h2 class="fw-bold display-5 mb-4 text-uppercase text-shadow" style="line-height: 1.1;">
+                    Lo que nos hace<br>diferente
+                </h2>
+                <a href="registro.php" class="btn rounded-pill px-4 py-2 fw-bold text-white"
+                   style="background-color: #E67E22; border: none; padding: 12px 30px;">
+                    Únete a la comunidad Roots <i class="fas fa-chevron-right ms-2"></i>
+                </a>
+            </div>
+
+            <div class="col-lg-7 ps-lg-5">
+                <p class="mb-4 text-shadow" style="font-size: 1rem; line-height: 1.6; font-weight: 500;">
+                    En Roots Market combinamos la practicidad de un súper tradicional con la
+                    tranquilidad de saber que todos nuestros productos están libres de químicos dañinos.
+                </p>
+                <p class="mb-5 text-shadow" style="font-size: 1rem; line-height: 1.6; font-weight: 500;">
+                    Aquí encontrarás productos curados con cuidado, precios justos y la comodidad
+                    de hacer tu súper completo desde casa, mientras cuidas tu salud y la del planeta.
+                </p>
+
+                <div class="row">
+                    <div class="col-6">
+                        <h3 class="fw-bold display-5 mb-0 text-shadow">100%</h3>
+                        <p class="small text-uppercase fw-bold text-shadow">libre de químicos dañinos</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="fw-bold display-5 mb-0 text-shadow">+500</h3>
+                        <p class="small text-uppercase fw-bold text-shadow">Productos curados y verificados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+</style>
+
 
 <style>
     .impact-section { padding: 4rem 0; background-color: #fff; }
@@ -330,51 +435,134 @@ try {
     .collapsed .chevron-icon { transform: rotate(180deg); }
 </style>
 
-<div class="container impact-section" id="iniciativas">
-    <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap">
+
+<div class="container impact-section mb-5" id="iniciativas">
+
+    <div class="row align-items-end mb-5">
         <div class="col-md-7">
-            <h2 class="section-title mb-3">HAZ QUE TU COMPRA CUENTE</h2>
-            <p class="section-desc">
+            <h2 class="section-title mb-3" style="font-size: 2rem; letter-spacing: 0.5px;">HAZ QUE TU COMPRA CUENTE</h2>
+            <p class="section-desc mb-0" style="font-size: 1rem; line-height: 1.5;">
                 En Roots, cada compra tiene un propósito.<br>
                 Con nuestros programas, transformar tu súper en acciones que<br>
                 cuidan el planeta y apoyan a la comunidad es más fácil de lo que imaginas.
             </p>
         </div>
-        <div class="col-md-3 text-md-end mt-3 mt-md-0">
-            <a href="nosotros.php" class="btn-dark-pill">Conoce más <i class="fas fa-chevron-right ms-2"></i></a>
+        <div class="col-md-5 text-md-end mt-4 mt-md-0">
+            <a href="nosotros.php" class="btn rounded-pill px-4 py-2 fw-bold text-white"
+               style="background-color: #E67E22; border: none; padding: 10px 25px;">
+                Conoce más <i class="fas fa-chevron-right ms-2"></i>
+            </a>
         </div>
     </div>
 
     <div class="row g-4">
+
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/nosotros3.png'); background-size: cover;"></div>
-            <p class="impact-title">Raíces Verdes</p>
+            <div class="impact-card" style="
+                background-image: url('front/multimedia/r1.png');
+                background-size: cover;
+                background-position: center;
+                height: 280px;
+                border-radius: 24px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            "></div>
+            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes</p>
         </div>
+
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/comunidad.png'); background-size: cover; background-position: center;"></div>
-            <p class="impact-title">Cero Basura</p>
+            <div class="impact-card" style="
+                background-image: url('front/multimedia/r2.png');
+                background-size: cover;
+                background-position: center;
+                height: 280px;
+                border-radius: 24px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            "></div>
+            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura</p>
         </div>
+
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/nosotros2.png'); background-size: cover;"></div>
-            <p class="impact-title">Impulso Local</p>
+            <div class="impact-card" style="
+                background-image: url('front/multimedia/r3.png');
+                background-size: cover;
+                background-position: center;
+                height: 280px;
+                border-radius: 24px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            "></div>
+            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local</p>
         </div>
+
     </div>
 </div>
 
+
+<style>
+    .local-impulse-section {
+        padding: 5rem 0;
+        background-color: #fff;
+    }
+    /* Tarjetas del acordeón con borde VERDE */
+    .faq-card {
+        border: 1px solid #4EAE3E; /* Color verde Roots */
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        background-color: #fff;
+    }
+    .faq-header {
+        padding: 1.2rem 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fff;
+        transition: background-color 0.2s;
+    }
+    .faq-header:hover {
+        background-color: #f9f9f9;
+    }
+    .faq-title {
+        font-size: 1.1rem;
+        margin: 0;
+        color: #333; /* Texto oscuro */
+        font-weight: 500;
+    }
+    .faq-body {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        color: #666;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    .chevron-icon {
+        color: #333;
+        transition: transform 0.3s ease;
+    }
+    /* Rotar flecha cuando está colapsado (ajusta según tu preferencia inicial) */
+    .collapsed .chevron-icon {
+        transform: rotate(180deg);
+    }
+</style>
+
 <div class="container local-impulse-section">
-    <div class="row gx-5">
-        <div class="col-lg-5 mb-5 mb-lg-0">
-            <h2 class="section-title mb-4">IMPULSO LOCAL</h2>
-            <p class="section-desc mb-4">
-                En Roots creemos en el talento y la calidad mexicana. Con Impulso Local,
-                cada compra ayuda a pequeñas y medianas marcas del país a crecer y ofrecer
+    <div class="row gx-5 align-items-start">
+        <div class="col-lg-5 mb-5 mb-lg-0 pt-2">
+            <h2 class="fw-bold text-uppercase mb-4" style="font-size: 2rem; color: #333;">IMPULSO LOCAL</h2>
+            <p class="text-muted mb-3">En Roots creemos en el talento y la calidad mexicana.</p>
+            <p class="text-muted mb-5" style="line-height: 1.6;">
+                Con Impulso Local, cada compra ayuda a pequeñas y medianas marcas del país a crecer y ofrecer
                 productos honestos y de confianza para tu día a día.
             </p>
-            <a href="tienda.php?origen=local" class="btn-dark-pill">Compra productos mexicanos <i class="fas fa-chevron-right ms-2"></i></a>
+
+            <a href="tienda.php?origen=local" class="btn rounded-pill px-4 py-3 fw-bold text-white"
+               style="background-color: #E67E22; border: none; width: fit-content; padding-left: 30px; padding-right: 30px;">
+                Compra productos mexicanos <i class="fas fa-chevron-right ms-2"></i>
+            </a>
         </div>
 
         <div class="col-lg-7">
             <div class="accordion" id="accordionImpulsoLocal">
+
                 <div class="faq-card">
                     <div class="faq-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                         <h5 class="faq-title">¿Qué es Impulso Local?</h5>
@@ -386,6 +574,7 @@ try {
                         </div>
                     </div>
                 </div>
+
                 <div class="faq-card">
                     <div class="faq-header collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                         <h5 class="faq-title">¿Cómo sé que un producto es local?</h5>
@@ -393,10 +582,11 @@ try {
                     </div>
                     <div id="collapseTwo" class="collapse" data-bs-parent="#accordionImpulsoLocal">
                         <div class="faq-body">
-                            Buscamos identificar claramente estos productos con un sello distintivo en nuestra tienda.
+                            Buscamos identificar claramente estos productos con un sello distintivo en nuestra tienda para que puedas reconocerlos fácilmente.
                         </div>
                     </div>
                 </div>
+
                 <div class="faq-card">
                     <div class="faq-header collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
                         <h5 class="faq-title">¿Puedo comprar solo productos locales?</h5>
@@ -404,10 +594,11 @@ try {
                     </div>
                     <div id="collapseThree" class="collapse" data-bs-parent="#accordionImpulsoLocal">
                         <div class="faq-body">
-                            ¡Claro! Puedes filtrar tu búsqueda para ver exclusivamente productos de nuestros socios locales.
+                            ¡Claro! Puedes usar nuestros filtros de búsqueda para ver exclusivamente productos de nuestros socios locales.
                         </div>
                     </div>
                 </div>
+
                 <div class="faq-card">
                     <div class="faq-header collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
                         <h5 class="faq-title">¿Hay beneficios adicionales por comprar local?</h5>
@@ -415,10 +606,11 @@ try {
                     </div>
                     <div id="collapseFour" class="collapse" data-bs-parent="#accordionImpulsoLocal">
                         <div class="faq-body">
-                            A menudo tenemos promociones especiales para incentivar el apoyo a marcas nacionales.
+                            Sí, a menudo tenemos promociones especiales para incentivar el apoyo a marcas nacionales y fortalecer la comunidad.
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

@@ -1,157 +1,373 @@
-<div class="container my-5">
-    <div class="row align-items-center bg-light p-4 rounded">
-        <!-- Imagen del Producto -->
-        <div class="col-md-5 text-center">
-            <img src="front/multimedia/kiwi.png" alt="Kiwi Importado" class="img-fluid rounded">
+<?php
+// --- 1. CONEXIÓN Y LÓGICA ---
+require_once(__DIR__ . '/../../back/conection/db.php');
 
-            <!-- Miniaturas de Imágenes -->
-            <div class="d-flex justify-content-center mt-3">
-                <img src="front/multimedia/kiwi.png" alt="Kiwi 1" class="img-thumbnail mx-1" style="width: 50px;">
-                <img src="front/multimedia/kiwi.png" alt="Kiwi 2" class="img-thumbnail mx-1" style="width: 50px;">
-                <img src="front/multimedia/kiwi.png" alt="Kiwi 3" class="img-thumbnail mx-1" style="width: 50px;">
+// Obtener ID del producto desde la URL
+$id_producto = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+$producto = null;
+$imagenes = [];
+$similares = [];
+
+if ($id_producto > 0) {
+    try {
+        // A) OBTENER DETALLES DEL PRODUCTO
+        $stmt = $pdo->prepare("SELECT * FROM productos WHERE id = ? AND estatus = 'activo'");
+        $stmt->execute([$id_producto]);
+        $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($producto) {
+            // B) OBTENER IMÁGENES
+            $stmt_img = $pdo->prepare("SELECT imagen_url FROM producto_imagenes WHERE producto_id = ? ORDER BY orden ASC");
+            $stmt_img->execute([$id_producto]);
+            $imagenes = $stmt_img->fetchAll(PDO::FETCH_COLUMN);
+
+            if (empty($imagenes)) {
+                $imagenes[] = 'front/multimedia/productos/default.png';
+            }
+
+            // C) OBTENER PRODUCTOS SIMILARES
+            $stmt_sim = $pdo->prepare("
+                SELECT p.*, 
+                       (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal
+                FROM productos p
+                WHERE p.catalogo_id = ? AND p.id != ? AND p.estatus = 'activo'
+                ORDER BY RAND() LIMIT 4
+            ");
+            $stmt_sim->execute([$producto['catalogo_id'], $id_producto]);
+            $similares = $stmt_sim->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+    } catch (PDOException $e) {
+        // Manejo de errores silencioso
+    }
+}
+
+if (!$producto) {
+    echo "<div class='container my-5 text-center'><h3>Producto no encontrado</h3><a href='tienda.php' class='btn btn-success'>Volver a la tienda</a></div>";
+    return;
+}
+?>
+
+<style>
+    /* --- ESTILOS FICHA DE PRODUCTO (FIGMA COLORS) --- */
+    body { background-color: #ffffff; }
+
+    /* GALERÍA */
+    .gallery-wrapper {
+        display: flex;
+        gap: 15px;
+        height: 500px;
+    }
+
+    .thumbnails-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 80px;
+        overflow-y: auto;
+    }
+
+    .thumb-img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: contain;
+        border-radius: 10px;
+        background-color: #fff; /* Fondo blanco limpio */
+        border: 1px solid #eee;
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 5px;
+    }
+
+    .thumb-img:hover, .thumb-img.active {
+        border-color: #E67E22; /* Borde naranja al seleccionar */
+    }
+
+    .main-image-col {
+        flex-grow: 1;
+        background-color: #F9F9F9; /* Gris muy claro casi blanco */
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .main-img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+    }
+
+    /* INFO PRODUCTO */
+    .product-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #333;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-price {
+        font-size: 1.8rem;
+        font-weight: 400;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .rating-stars { color: #E67E22; /* Estrellas naranjas */ font-size: 0.9rem; }
+    .review-count { color: #888; font-size: 0.9rem; margin-left: 5px; }
+
+    .product-description {
+        color: #666;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 1.5rem 0;
+    }
+
+    /* BOTONES DE ACCIÓN - ACTUALIZACIÓN DE COLORES */
+    .action-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 2rem;
+    }
+
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 50px;
+        padding: 5px 15px;
+        height: 50px;
+    }
+
+    .qty-btn { border: none; background: none; font-size: 1.2rem; cursor: pointer; color: #333; }
+    .qty-input { border: none; width: 40px; text-align: center; font-weight: 600; outline: none; }
+
+    /* BOTÓN NARANJA (Añadir al carrito) */
+    .btn-add-cart {
+        background-color: #E67E22; /* Naranja Figma */
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 40px;
+        font-weight: 600;
+        height: 50px;
+        flex-grow: 1;
+        transition: background 0.3s;
+    }
+    .btn-add-cart:hover { background-color: #D35400; /* Naranja más oscuro al hover */ }
+
+    /* BOTÓN BLANCO/NEGRO (Comprar ahora) */
+    .btn-buy-now {
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #333;
+        border-radius: 50px;
+        padding: 12px 40px;
+        font-weight: 600;
+        height: 50px;
+        width: 100%;
+        margin-top: 10px;
+        transition: all 0.3s;
+    }
+    .btn-buy-now:hover { background-color: #f5f5f5; }
+
+    /* ICONOS ENVÍO (Verdes) */
+    .shipping-info {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .shipping-item { display: flex; align-items: center; gap: 10px; }
+    .shipping-item i { color: #4EAE3E; /* Iconos verdes */ font-size: 1.1rem; }
+
+    /* INFO NUTRICIONAL */
+    .nutrition-box {
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 3rem;
+    }
+    .nutrition-item {
+        text-align: center;
+        border-right: 1px solid #eee;
+    }
+    .nutrition-item:last-child { border-right: none; }
+    .nutri-val { font-weight: 700; font-size: 1.1rem; display: block; color: #333; }
+    .nutri-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+
+    /* SIMILARES */
+    .similar-card { border: none; background: transparent; transition: transform 0.3s; }
+    .similar-card:hover { transform: translateY(-5px); }
+    .similar-img-box {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+        aspect-ratio: 1/1.1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    .similar-img-box img { width: 80%; height: 80%; object-fit: contain; }
+</style>
+
+<div class="container my-5">
+    <div class="row gx-5">
+
+        <div class="col-lg-7 mb-5 mb-lg-0">
+            <div class="gallery-wrapper">
+                <div class="thumbnails-col d-none d-md-flex">
+                    <?php foreach ($imagenes as $index => $img): ?>
+                        <img src="<?php echo htmlspecialchars(ltrim($img, '/')); ?>"
+                             class="thumb-img <?php echo $index === 0 ? 'active' : ''; ?>"
+                             onclick="changeImage(this.src, this)"
+                             alt="Thumbnail">
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="main-image-col">
+                    <img id="mainImage" src="<?php echo htmlspecialchars(ltrim($imagenes[0], '/')); ?>" class="main-img" alt="<?php echo htmlspecialchars($producto['nombre']); ?>">
+                </div>
             </div>
         </div>
 
-        <!-- Información del Producto -->
-        <div class="col-md-7">
-            <span class="badge bg-danger mb-2">Promoción</span>
-            <h2 class="fw-bold">Kiwi Importado</h2>
-            <h3 class="fw-bold text-green mb-3">$99.00 <small>/kg</small></h3>
+        <div class="col-lg-5">
+            <h1 class="product-title"><?php echo htmlspecialchars($producto['nombre']); ?></h1>
 
-            <button class="btn btn-success mb-3">Agregar</button>
-
-            <!-- Opciones de Madurez -->
-            <div class="mb-3">
-                <button class="btn btn-outline-secondary">Verde</button>
-                <button class="btn btn-outline-secondary">Medio</button>
-                <button class="btn btn-outline-secondary">Maduro</button>
+            <div class="d-flex align-items-center mb-3">
+                <div class="rating-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <span class="review-count">(32 reviews)</span>
+                <i class="far fa-heart ms-auto fs-5 text-muted" style="cursor: pointer;"></i>
             </div>
 
-            <!-- Tabla Nutrimental -->
-            <h5 class="fw-bold">Tabla Nutrimental</h5>
-            <div class="d-flex mb-3">
-                <div class="p-2 border rounded text-center mx-1">
-                    <p class="fw-bold mb-0">100g</p>
-                    <small>Porción</small>
-                </div>
-                <div class="p-2 border rounded text-center mx-1">
-                    <p class="fw-bold mb-0">0</p>
-                    <small>Grasas por 100g</small>
-                </div>
-                <div class="p-2 border rounded text-center mx-1">
-                    <p class="fw-bold mb-0">52</p>
-                    <small>Calorías por 100g</small>
-                </div>
-                <div class="p-2 border rounded text-center mx-1">
-                    <p class="fw-bold mb-0">1.1</p>
-                    <small>Proteínas por 100g</small>
-                </div>
+            <div class="product-price">
+                <?php if ($producto['precio_oferta']): ?>
+                    <span class="text-decoration-line-through text-muted fs-5 me-2">$<?php echo number_format($producto['precio_venta'], 2); ?></span>
+                    $<?php echo number_format($producto['precio_oferta'], 2); ?>
+                <?php else: ?>
+                    $<?php echo number_format($producto['precio_venta'], 2); ?>
+                <?php endif; ?>
             </div>
 
-            <!-- Descripción del Producto -->
-            <p>
-                Nescafé Frappé es un premix ideal para tu negocio. Esta mezcla en polvo te permite preparar bebidas frías
-                de manera fácil y rápida. No requiere el uso de base láctea, leches o ingredientes adicionales, ya que es
-                un premix completo.
-            </p>
+            <div class="product-description">
+                <p class="mb-2"><?php echo htmlspecialchars($producto['descripcion_corta']); ?></p>
+                <ul class="list-unstyled text-muted small mt-3">
+                    <li>• Origen: <?php echo htmlspecialchars($producto['origen'] ?? 'Nacional'); ?></li>
+                    <?php if($producto['es_organico']): ?> <li>• Producto Orgánico</li> <?php endif; ?>
+                    <?php if($producto['es_vegano']): ?> <li>• Apto para veganos</li> <?php endif; ?>
+                </ul>
+            </div>
+
+            <div class="action-row">
+                <div class="quantity-selector">
+                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                    <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
+                    <button class="qty-btn" onclick="updateQty(1)">+</button>
+                </div>
+                <button class="btn-add-cart"
+                        onclick="addToCart(
+                            <?php echo $producto['id']; ?>,
+                            '<?php echo htmlspecialchars($producto['nombre']); ?>',
+                            <?php echo $producto['precio_oferta'] ?: $producto['precio_venta']; ?>,
+                            '<?php echo htmlspecialchars(ltrim($imagenes[0], '/')); ?>',
+                            document.getElementById('qtyInput').value
+                        )">
+                    Añadir al carrito
+                </button>
+            </div>
+            <button class="btn-buy-now">Comprar ahora</button>
+
+            <div class="shipping-info">
+                <div class="shipping-item">
+                    <i class="fas fa-truck"></i> <span>Envío gratis en compras mayores a $1,000 MXN</span>
+                </div>
+                <div class="shipping-item">
+                    <i class="fas fa-clock"></i> <span>Entrega en menos de 2 horas | Envíos rápidos y seguros</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php if($producto['calorias'] || $producto['proteinas_g']): ?>
+    <div class="nutrition-box">
+        <h5 class="fw-bold mb-4 text-center text-uppercase" style="font-size: 1rem; letter-spacing: 1px;">Información Nutricional</h5>
+        <div class="row justify-content-center">
+            <div class="col-3 col-md-2 nutrition-item">
+                <span class="nutri-val"><?php echo $producto['calorias'] ?? '-'; ?></span>
+                <span class="nutri-label">Calorías</span>
+            </div>
+            <div class="col-3 col-md-2 nutrition-item">
+                <span class="nutri-val"><?php echo $producto['proteinas_g'] ?? '-'; ?>g</span>
+                <span class="nutri-label">Proteínas</span>
+            </div>
+            <div class="col-3 col-md-2 nutrition-item">
+                <span class="nutri-val"><?php echo $producto['grasas_g'] ?? '-'; ?>g</span>
+                <span class="nutri-label">Grasas</span>
+            </div>
+            <div class="col-3 col-md-2 nutrition-item">
+                <span class="nutri-val"><?php echo $producto['carbohidratos_g'] ?? '-'; ?>g</span>
+                <span class="nutri-label">Carbos</span>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <div class="mt-5 pt-5">
+        <h3 class="fw-bold mb-4 text-uppercase" style="font-size: 1.5rem;">PRODUCTOS SIMILARES</h3>
+        <div class="row g-4">
+            <?php if (!empty($similares)): ?>
+                <?php foreach ($similares as $sim): ?>
+                    <div class="col-6 col-md-3">
+                        <div class="similar-card">
+                            <div class="similar-img-box">
+                                <a href="producto.php?id=<?php echo $sim['id']; ?>">
+                                    <img src="<?php echo htmlspecialchars(ltrim($sim['imagen_principal'] ?? $sim['imagen_url'], '/')); ?>" alt="<?php echo htmlspecialchars($sim['nombre']); ?>">
+                                </a>
+                            </div>
+                            <h6 class="fw-bold text-truncate mt-2">
+                                <a href="producto.php?id=<?php echo $sim['id']; ?>" class="text-decoration-none text-dark">
+                                    <?php echo htmlspecialchars($sim['nombre']); ?>
+                                </a>
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span class="fw-bold text-dark">$<?php echo number_format($sim['precio_venta'], 2); ?></span>
+                                <i class="fas fa-plus-circle fs-4 text-dark" style="cursor: pointer;" onclick="addToCart(<?php echo $sim['id']; ?>, '<?php echo htmlspecialchars($sim['nombre']); ?>', <?php echo $sim['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($sim['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>')"></i>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-muted">No hay productos similares disponibles.</p>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
+<script>
+    function changeImage(src, element) {
+        document.getElementById('mainImage').src = src;
+        document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-<div class="container my-5 text-center">
-    <h2 class="fw-bold" style="color: #2d4c48;">Productos Top</h2>
-</div>
-
-<div class="container my-5">
-    <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <!-- Primer Slide -->
-            <div class="carousel-item active">
-                <div class="row justify-content-center">
-                    <!-- Producto 1 -->
-                    <div class="col-6 col-md-3 mb-4">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/kiwi.png" class="card-img-top img-fluid" alt="Kiwi Orgánico" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Kiwi Orgánico</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Producto 2 -->
-                    <div class="col-6 col-md-3 mb-4">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/papaya.png" class="card-img-top img-fluid" alt="Papaya Orgánica" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Papaya Orgánica</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Producto 3 -->
-                    <div class="col-6 col-md-3 mb-4">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/pera.png" class="card-img-top img-fluid" alt="Pera Orgánica" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Pera Orgánica</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Producto 4 -->
-                    <div class="col-6 col-md-3 mb-4">
-                        <div class="card text-center border-0">
-                            <img src="front/multimedia/chile.png" class="card-img-top img-fluid" alt="Chile Orgánico" style="height: 200px; object-fit: contain;">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Chile Orgánico</h5>
-                                <p class="text-muted"><del>$400</del> <span class="text-danger fw-bold">$350</span></p>
-                                <p class="text-warning"><i class="fas fa-star"></i> (5)</p>
-                                <div class="d-flex justify-content-center align-items-center mb-2">
-                                    <button class="btn btn-outline-secondary btn-sm">-</button>
-                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" style="width: 60px;">
-                                    <button class="btn btn-outline-secondary btn-sm">+</button>
-                                </div>
-                                <button class="btn btn-success w-100">Agregar <i class="fas fa-shopping-cart ms-1"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controles del Carrusel -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-    </div>
-</div>
+    function updateQty(change) {
+        const input = document.getElementById('qtyInput');
+        let val = parseInt(input.value);
+        val += change;
+        if (val < 1) val = 1;
+        input.value = val;
+    }
+</script>
