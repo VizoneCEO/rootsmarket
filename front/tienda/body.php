@@ -175,7 +175,7 @@ try {
 
 <div class="container my-5">
 
-    
+
 
     <h2 class="text-center fw-bold mb-4" style="color: #333;">Bienvenido a tu espacio orgánico</h2>
     <hr class="mb-5">
