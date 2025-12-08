@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /back/
+Disallow: /vendor/
+Disallow: /front/admin/

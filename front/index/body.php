@@ -190,13 +190,14 @@ try {
     .category-item {
         flex: 0 0 auto;
         width: 280px;
-        /* Fixed width for carousel items */
+        /* Mobile width */
         scroll-snap-align: start;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 992px) {
         .category-item {
-            width: 300px;
+            /* 3 items per view: (100% - 2 gaps of 20px) / 3 */
+            width: calc((100% - 40px) / 3);
         }
     }
 
@@ -330,12 +331,10 @@ try {
     <div class="categories-carousel">
         <?php foreach ($categorias as $cat): ?>
             <div class="category-item">
-                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="category-card">
-                    <?php if (!empty($cat['imagen'])): ?>
-                        <img src="<?php echo htmlspecialchars(ltrim($cat['imagen'], '/')); ?>"
+                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-card">
+                    <?php if (!empty($cat['imagen_url'])): ?>
+                        <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>"
                             alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
-                    <?php else: ?>
-                        <img src="front/multimedia/categoria_default.png" alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
                     <?php endif; ?>
                 </a>
                 <div class="cat-label"><?php echo htmlspecialchars($cat['nombre']); ?></div>
