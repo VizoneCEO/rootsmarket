@@ -27,7 +27,8 @@
                     </a>
                 </div>
                 <div>
-                    <a href="../../back/login/aut.php?action=logout" class="d-flex align-items-center text-dark text-decoration-none">
+                    <a href="../../back/login/aut.php?action=logout"
+                        class="d-flex align-items-center text-dark text-decoration-none">
                         <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                     </a>
                 </div>

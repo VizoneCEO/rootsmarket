@@ -4,15 +4,16 @@ require_once(__DIR__ . '/../../back/conection/db.php');
 
 // Configuración de Paginación / Carga
 $limit_inicial = 50;
-$limit_actual = isset($_GET['ver_hasta']) ? (int)$_GET['ver_hasta'] : $limit_inicial;
+$limit_actual = isset($_GET['ver_hasta']) ? (int) $_GET['ver_hasta'] : $limit_inicial;
 
 // Filtros (Categoría y Búsqueda)
 $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : 0;
 $busqueda = isset($_GET['q']) ? $_GET['q'] : null;
 
 try {
-    // A) OBTENER CATEGORÍAS PARA EL SELECT
-    $stmt_cat = $pdo->prepare("SELECT id, nombre FROM catalogos WHERE estatus = 'activo' ORDER BY nombre ASC");
+    // A) OBTENER CATEGORÍAS PARA EL SELECT (Y GRID MOVIL) - Updated to fetch imagen_url
+    // Assuming 'imagen_url' exists as per index.php usage.
+    $stmt_cat = $pdo->prepare("SELECT id, nombre, imagen_url FROM catalogos WHERE estatus = 'activo' ORDER BY nombre ASC");
     $stmt_cat->execute();
     $categorias = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
 
@@ -54,13 +55,18 @@ try {
 } catch (PDOException $e) {
     $error = "Error al cargar productos: " . $e->getMessage();
 }
+
+// Pastel Colors Array for Categories
+$pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F1'];
 ?>
 
 <style>
     /* --- ESTILOS GENERALES --- */
-    body { background-color: #ffffff; }
+    body {
+        background-color: #ffffff;
+    }
 
-    /* Header Image (Estilo Version 1) */
+    /* Desktop Styles (Preserved) */
     .header-image {
         height: 300px;
         position: relative;
@@ -68,22 +74,25 @@ try {
         border-radius: 20px;
         margin-bottom: 2rem;
     }
+
     .header-image img {
         height: 100%;
         width: 100%;
         object-fit: cover;
     }
+
     .overlay-text {
         font-size: 2.5rem;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         width: 100%;
     }
 
-    /* Filtros (Select y Buscador) */
     .filters-row {
         margin-bottom: 2rem;
     }
-    .form-select-custom, .form-input-custom {
+
+    .form-select-custom,
+    .form-input-custom {
         border-radius: 50px;
         padding: 12px 20px;
         border: 1px solid #ddd;
@@ -91,19 +100,23 @@ try {
         outline: none;
         transition: border-color 0.3s;
     }
-    .form-select-custom:focus, .form-input-custom:focus {
+
+    .form-select-custom:focus,
+    .form-input-custom:focus {
         border-color: #4EAE3E;
         box-shadow: 0 0 0 3px rgba(78, 174, 62, 0.1);
     }
 
-    /* Tarjetas de Producto (Estilo Blanco Limpio) */
     .product-card-figma {
         border: none;
         background: transparent;
         margin-bottom: 2rem;
         transition: transform 0.3s ease;
     }
-    .product-card-figma:hover { transform: translateY(-5px); }
+
+    .product-card-figma:hover {
+        transform: translateY(-5px);
+    }
 
     .img-placeholder {
         background-color: #FFFFFF;
@@ -117,6 +130,7 @@ try {
         align-items: center;
         justify-content: center;
     }
+
     .img-placeholder img {
         width: 100%;
         height: 100%;
@@ -126,7 +140,8 @@ try {
 
     .discount-tag {
         position: absolute;
-        top: 10px; left: 10px;
+        top: 10px;
+        left: 10px;
         background-color: #333;
         color: white;
         font-size: 0.75rem;
@@ -136,46 +151,330 @@ try {
     }
 
     .prod-title {
-        font-size: 1rem; font-weight: 600; color: #333;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
         margin-bottom: 0.2rem;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
+
     .prod-desc {
-        font-size: 0.85rem; color: #888;
+        font-size: 0.85rem;
+        color: #888;
         margin-bottom: 0.5rem;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    .prod-price { font-weight: 700; color: #333; }
-    .old-price { text-decoration: line-through; color: #aaa; font-size: 0.85rem; margin-right: 5px; }
+
+    .prod-price {
+        font-weight: 700;
+        color: #333;
+    }
+
+    .old-price {
+        text-decoration: line-through;
+        color: #aaa;
+        font-size: 0.85rem;
+        margin-right: 5px;
+    }
 
     .add-btn-icon {
-        width: 32px; height: 32px;
-        border-radius: 50%; border: 1px solid #ccc;
-        background: white; color: #333;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: all 0.2s;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        background: white;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
     }
-    .add-btn-icon:hover { background-color: #4EAE3E; border-color: #4EAE3E; color: white; }
+
+    .add-btn-icon:hover {
+        background-color: #4EAE3E;
+        border-color: #4EAE3E;
+        color: white;
+    }
 
     .btn-load-more {
-        background-color: #f0f0f0; color: #333;
-        border: none; padding: 12px 40px;
-        border-radius: 50px; font-weight: 600;
+        background-color: #f0f0f0;
+        color: #333;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 50px;
+        font-weight: 600;
         transition: all 0.3s;
         text-decoration: none;
         display: inline-block;
     }
-    .btn-load-more:hover { background-color: #e0e0e0; color: #000; }
+
+    .btn-load-more:hover {
+        background-color: #e0e0e0;
+        color: #000;
+    }
 
     @media (max-width: 768px) {
-        .header-image { height: 200px; }
-        .overlay-text { font-size: 1.8rem; }
+        .header-image {
+            height: 200px;
+        }
+
+        .overlay-text {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* --- MOBILE CATEGORIES STYLES --- */
+    .mobile-cat-header {
+        background-color: white;
+        padding: 40px 20px 15px 20px;
+        /* Safe area top padding */
+        position: sticky;
+        top: 0;
+        z-index: 1040;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .mobile-header-row-1 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    .mobile-header-row-1-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .entrega-label-dark {
+        color: #333;
+        /* Dark text for white background */
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 5px;
+    }
+
+    .location-pill-mobile {
+        background-color: #f5f5f5;
+        /* Light gray for contrast on white header? Or White with shadow? User said "Header... White". Let's use F5F5F5 to pop or White with Shadow. Home used White on Image. Here Header is White. Let's use F9F9F9 with shadow. */
+        background-color: #f8f8f8;
+        padding: 8px 15px;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        /* box-shadow: 0 2px 5px rgba(0,0,0,0.05); */
+        border: 1px solid #eee;
+        font-weight: 700;
+        color: #333;
+        font-size: 1rem;
+        flex-grow: 1;
+        margin-right: 15px;
+        min-width: 0;
+    }
+
+    /* Mobile Search Pill */
+    .mobile-search-pill {
+        width: 100%;
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 50px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        color: #999;
+    }
+
+    .mobile-search-pill i {
+        margin-right: 10px;
+        color: #4EAE3E;
+    }
+
+    .mobile-search-input {
+        border: none;
+        outline: none;
+        width: 100%;
+        background: transparent;
+        color: #333;
+    }
+
+    /* Category Card Mobile */
+    .cat-mobile-card {
+        background: white;
+        border-radius: 16px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 100px;
+        border: 1px solid #f0f0f0;
+        /* Subtle border */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        /* Very subtle shadow */
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .cat-mobile-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #000;
+        width: 50%;
+        line-height: 1.2;
+    }
+
+    .cat-mobile-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-left: 10px;
+    }
+
+    .cat-mobile-circle img {
+        width: 70%;
+        height: 70%;
+        object-fit: contain;
     }
 </style>
 
-<div class="container my-5">
+<!-- ================= MOBILE VIEW (Categories Grid) ================= -->
+<div class="d-lg-none">
+
+    <!-- Mobile Sticky Header -->
+    <div class="mobile-cat-header">
+        <!-- Row 1: Address + Bell -->
+        <div class="mobile-header-row-1">
+            <div class="entrega-label-dark">Entrega</div>
+            <div class="mobile-header-row-1-content">
+                <div class="location-pill-mobile">
+                    <i class="fas fa-map-marker-alt" style="color: #4EAE3E; margin-right: 8px;"></i>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1;">Casa de
+                        Luis</span>
+                    <i class="fas fa-chevron-down" style="color: #333; margin-left: 8px; font-size: 0.8rem;"></i>
+                </div>
+                <!-- Notif Bell -->
+                <div
+                    style="width: 45px; height: 45px; border-radius: 50%; background: #f8f8f8; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; flex-shrink: 0;">
+                    <i class="fas fa-bell" style="color: #4EAE3E; font-size: 1.2rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Search Pill -->
+        <div class="mb-3">
+            <form action="tienda.php" method="GET" class="mobile-search-pill">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" class="mobile-search-input" placeholder="Buscar en Roots..."
+                    value="<?php echo htmlspecialchars($busqueda ?? ''); ?>">
+            </form>
+        </div>
+
+        <!-- Row 3: Title -->
+        <div>
+            <h5 class="fw-bold m-0" style="color: #333;">All categories</h5>
+        </div>
+    </div>
+
+    <!-- Category Grid Body -->
+    <div class="container pb-5" style="padding-top: 20px;">
+        <?php if ($categoria_id == 0 && empty($busqueda)): ?>
+            <!-- SHOW CATEGORY GRID -->
+            <div class="row g-3">
+                <?php foreach ($categorias as $index => $cat): ?>
+                    <?php
+                    $color_bg = $pastel_colors[$index % count($pastel_colors)];
+                    ?>
+                    <div class="col-6">
+                        <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-mobile-card">
+                            <div class="cat-mobile-name"><?php echo htmlspecialchars($cat['nombre']); ?></div>
+                            <div class="cat-mobile-circle" style="background-color: <?php echo $color_bg; ?>;">
+                                <?php if (!empty($cat['imagen_url'])): ?>
+                                    <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>" alt="Cat">
+                                <?php else: ?>
+                                    <img src="front/multimedia/cat_placeholder.png" alt="Cat">
+                                <?php endif; ?>
+                            </div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Spacing for bottom nav -->
+            <div style="height: 80px;"></div>
+
+        <?php else: ?>
+            <!-- SHOW PRODUCT LIST (Filtered) inside Mobile Layout -->
+            <!-- We reuse the logic below but maybe just ensure it renders well or provide a back button? -->
+            <div class="d-flex align-items-center mb-3">
+                <a href="tienda.php" class="text-dark me-3"><i class="fas fa-arrow-left"></i></a>
+                <h5 class="m-0 fw-bold">Resultados</h5>
+            </div>
+
+            <!-- Render Products Grid Mobile -->
+            <div class="row g-2">
+                <?php foreach ($productos as $prod): ?>
+                    <!-- Mobile Vertical Card Style reuse or simplified -->
+                    <div class="col-6">
+                        <div class="product-card-figma" style="margin-bottom: 1rem;">
+                            <div class="img-placeholder" style="border-radius: 12px; margin-bottom: 0.5rem;">
+                                <!-- Discount -->
+                                <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                    <span class="discount-tag"
+                                        style="top:5px; left:5px; font-size:0.6rem;">-<?php echo $descuento; ?>%</span>
+                                <?php endif; ?>
+
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>">
+                                    <?php if (!empty($prod['imagen_principal'])): ?>
+                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_url'] ?? $prod['imagen_principal'], '/')); ?>"
+                                            style="padding: 10px;">
+                                    <?php else: ?>
+                                        <div class="text-secondary text-opacity-25"><i class="fas fa-leaf fa-2x"></i></div>
+                                    <?php endif; ?>
+                                </a>
+                            </div>
+
+                            <h6 class="prod-title" style="font-size: 0.9rem;"><?php echo htmlspecialchars($prod['nombre']); ?>
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <?php if ($prod['precio_oferta']): ?>
+                                        <div style="font-size: 0.8rem; font-weight:700;">
+                                            $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                                    <?php else: ?>
+                                        <div style="font-size: 0.8rem; font-weight:700;">
+                                            $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <button class="add-btn-icon" style="width: 28px; height: 28px;"
+                                    onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_url'] ?? $prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>')">
+                                    <i class="fas fa-plus" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div style="height: 80px;"></div>
+        <?php endif; ?>
+    </div>
+</div>
 
 
+<!-- ================= DESKTOP VIEW (Existing) ================= -->
+<div class="container my-5 d-none d-lg-block">
 
     <h2 class="text-center fw-bold mb-4" style="color: #333;">Bienvenido a tu espacio orgánico</h2>
     <hr class="mb-5">
@@ -194,15 +493,15 @@ try {
         </div>
         <div class="col-md-8">
             <input type="text" class="form-input-custom" id="buscadorTienda"
-                   placeholder="Busca tu producto por nombre..."
-                   value="<?php echo htmlspecialchars($busqueda ?? ''); ?>">
+                placeholder="Busca tu producto por nombre..." value="<?php echo htmlspecialchars($busqueda ?? ''); ?>">
         </div>
     </div>
 
     <div class="row g-4">
         <?php if (!empty($productos)): ?>
             <?php foreach ($productos as $prod): ?>
-                <div class="col-6 col-md-4 col-lg-3"> <div class="product-card-figma">
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card-figma">
                         <div class="img-placeholder">
                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
@@ -211,7 +510,8 @@ try {
 
                             <a href="producto.php?id=<?php echo $prod['id']; ?>">
                                 <?php if (!empty($prod['imagen_principal'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_url'] ?? $prod['imagen_principal'], '/')); ?>" alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_url'] ?? $prod['imagen_principal'], '/')); ?>"
+                                        alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
                                 <?php else: ?>
                                     <div class="text-secondary text-opacity-25"><i class="fas fa-leaf fa-3x"></i></div>
                                 <?php endif; ?>
@@ -235,8 +535,7 @@ try {
                                 <?php endif; ?>
                             </div>
 
-                            <button class="add-btn-icon"
-                                    onclick="addToCart(
+                            <button class="add-btn-icon" onclick="addToCart(
                                         <?php echo $prod['id']; ?>,
                                         '<?php echo htmlspecialchars($prod['nombre']); ?>',
                                         <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
@@ -259,17 +558,19 @@ try {
     <?php if ($total_productos > $limit_actual): ?>
         <div class="text-center mt-5 mb-5">
             <?php $mostrando = min($limit_actual, $total_productos); ?>
-            <p class="text-muted mb-3 small">Mostrando <?php echo $mostrando; ?> de <?php echo $total_productos; ?> productos</p>
+            <p class="text-muted mb-3 small">Mostrando <?php echo $mostrando; ?> de <?php echo $total_productos; ?>
+                productos</p>
 
             <div class="progress mb-4 mx-auto" style="height: 4px; max-width: 200px; background-color: #e9ecef;">
-                <div class="progress-bar bg-dark" role="progressbar" style="width: <?php echo ($mostrando / $total_productos) * 100; ?>%;"></div>
+                <div class="progress-bar bg-dark" role="progressbar"
+                    style="width: <?php echo ($mostrando / $total_productos) * 100; ?>%;"></div>
             </div>
 
             <?php
-                // Construir URL para cargar más
-                $params = $_GET;
-                $params['ver_hasta'] = $limit_actual + 50;
-                $new_query_string = http_build_query($params);
+            // Construir URL para cargar más
+            $params = $_GET;
+            $params['ver_hasta'] = $limit_actual + 50;
+            $new_query_string = http_build_query($params);
             ?>
             <a href="?<?php echo $new_query_string; ?>" class="btn-load-more">
                 Cargar más productos
@@ -285,22 +586,24 @@ try {
     // Detectar tecla Enter o pausa al escribir en el buscador
     const inputBuscador = document.getElementById('buscadorTienda');
 
-    inputBuscador.addEventListener('keyup', function(e) {
-        // Si presiona Enter, busca inmediatamente
-        if (e.key === 'Enter') {
-            aplicarFiltros();
-            return;
-        }
+    if (inputBuscador) {
+        inputBuscador.addEventListener('keyup', function (e) {
+            // Si presiona Enter, busca inmediatamente
+            if (e.key === 'Enter') {
+                aplicarFiltros();
+                return;
+            }
 
-        // Si no, espera 800ms a que termine de escribir (Debounce)
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            aplicarFiltros();
-        }, 800);
-    });
+            // Si no, espera 800ms a que termine de escribir (Debounce)
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                aplicarFiltros();
+            }, 800);
+        });
+    }
 
     function aplicarFiltros() {
-        const categoriaId = document.getElementById('filtroCategoria').value;
+        const categoriaId = document.getElementById('filtroCategoria') ? document.getElementById('filtroCategoria').value : 0;
         const textoBusqueda = document.getElementById('buscadorTienda').value;
 
         // Construir la URL con los parámetros
