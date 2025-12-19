@@ -163,7 +163,7 @@
         <div class="col-md-4">
             <div class="initiative-card">
                 <div class="card-image-wrapper">
-                    <span class="card-badge">Raíces Verdes</span>
+
                     <img src="front/multimedia/r1.png" alt="Raíces Verdes">
                 </div>
                 <h4 class="card-title">Raíces Verdes</h4>
@@ -176,7 +176,7 @@
         <div class="col-md-4">
             <div class="initiative-card">
                 <div class="card-image-wrapper">
-                    <span class="card-badge" style="background-color: #E67E22;">Cero Basura</span>
+
                     <img src="front/multimedia/r2.png" alt="Cero Basura">
                 </div>
                 <h4 class="card-title">Cero Basura</h4>
@@ -189,7 +189,7 @@
         <div class="col-md-4">
             <div class="initiative-card">
                 <div class="card-image-wrapper">
-                    <span class="card-badge">Impulso Local</span>
+
                     <img src="front/multimedia/r3.png" alt="Impulso Local">
                 </div>
                 <h4 class="card-title">Impulso Local</h4>

@@ -228,6 +228,38 @@ try {
     }
 
 
+    /* --- ARROWS FOR CAROUSEL --- */
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        color: #333;
+    }
+
+    .carousel-arrow:hover {
+        background-color: #f0f0f0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .prev-arrow {
+        left: -20px;
+    }
+
+    .next-arrow {
+        right: -20px;
+    }
 
     /* --- CATEGORIAS --- */
     /* Mobile Categories Horizontal - UPDATED */
@@ -535,20 +567,43 @@ try {
         <?php endforeach; ?>
     </div>
 
-    <!-- DESKTOP CATEGORIES CAROUSEL (Existing) -->
-    <div class="categories-carousel d-none d-lg-flex">
-        <?php foreach ($categorias as $cat): ?>
-            <div class="category-item">
-                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-card">
-                    <?php if (!empty($cat['imagen_url'])): ?>
-                        <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>"
-                            alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
-                    <?php endif; ?>
-                </a>
-                <div class="cat-label"><?php echo htmlspecialchars($cat['nombre']); ?></div>
-            </div>
-        <?php endforeach; ?>
+    <!-- DESKTOP CATEGORIES CAROUSEL (Updated with Arrows) -->
+    <div class="position-relative d-none d-lg-block">
+        <button class="carousel-arrow prev-arrow" onclick="scrollCategories(-1)" type="button">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="categories-carousel" id="categoriesCarousel">
+            <?php foreach ($categorias as $cat): ?>
+                <div class="category-item">
+                    <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-card">
+                        <?php if (!empty($cat['imagen_url'])): ?>
+                            <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>"
+                                alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
+                        <?php endif; ?>
+                    </a>
+                    <div class="cat-label"><?php echo htmlspecialchars($cat['nombre']); ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <button class="carousel-arrow next-arrow" onclick="scrollCategories(1)" type="button">
+            <i class="fas fa-chevron-right"></i>
+        </button>
     </div>
+
+    <script>
+        function scrollCategories(direction) {
+            const container = document.getElementById('categoriesCarousel');
+            if (container) {
+                const scrollAmount = 300; // Adjust scroll distance as needed
+                container.scrollBy({
+                    left: direction * scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    </script>
 </div>
 
 
@@ -846,39 +901,57 @@ try {
 
     <!-- MOBILE IMPACT SLIDER (Horizontal) -->
     <div class="d-flex d-lg-none" style="overflow-x: auto; padding-bottom: 15px;">
-        <!-- Card 1 -->
-        <div class="impact-card-mobile" style="background-image: url('front/multimedia/r1.png'); flex: 0 0 auto;">
-            <div class="impact-badge-mobile">Iniciativa</div>
-            <div class="impact-text-mobile">Raíces Verdes</div>
-        </div>
-        <!-- Card 2 -->
-        <div class="impact-card-mobile" style="background-image: url('front/multimedia/r2.png'); flex: 0 0 auto;">
-            <div class="impact-badge-mobile">Sostenible</div>
-            <div class="impact-text-mobile">Cero Basura</div>
-        </div>
-        <!-- Card 3 -->
-        <div class="impact-card-mobile" style="background-image: url('front/multimedia/r3.png'); flex: 0 0 auto;">
-            <div class="impact-badge-mobile">Comunidad</div>
-            <div class="impact-text-mobile">Impulso Local</div>
-        </div>
+        <!-- Card 1: Raíces Verdes -->
+        <a href="iniciativas_roots.php" class="text-decoration-none text-white d-block me-3">
+            <div class="impact-card-mobile"
+                style="background-image: url('front/multimedia/r1.png'); flex: 0 0 auto; margin-right:0;">
+                <div class="impact-badge-mobile">Iniciativa</div>
+                <div class="impact-text-mobile">Raíces Verdes</div>
+            </div>
+        </a>
+        <!-- Card 2: Cero Basura -->
+        <a href="iniciativas_roots.php" class="text-decoration-none text-white d-block me-3">
+            <div class="impact-card-mobile"
+                style="background-image: url('front/multimedia/r2.png'); flex: 0 0 auto; margin-right:0;">
+                <div class="impact-badge-mobile">Sostenible</div>
+                <div class="impact-text-mobile">Cero Basura</div>
+            </div>
+        </a>
+        <!-- Card 3: Impulso Local -->
+        <a href="impulso_local.php" class="text-decoration-none text-white d-block">
+            <div class="impact-card-mobile"
+                style="background-image: url('front/multimedia/r3.png'); flex: 0 0 auto; margin-right:0;">
+                <div class="impact-badge-mobile">Comunidad</div>
+                <div class="impact-text-mobile">Impulso Local</div>
+            </div>
+        </a>
     </div>
 
     <!-- DESKTOP IMPACT GRID (Existing) -->
     <div class="row g-4 d-none d-lg-flex">
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/r1.png'); background-size: cover;">
-            </div>
-            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes</p>
+            <a href="iniciativas_roots.php" class="text-decoration-none">
+                <div class="impact-card"
+                    style="background-image: url('front/multimedia/r1.png'); background-size: cover;">
+                </div>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes</p>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/r2.png'); background-size: cover;">
-            </div>
-            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura</p>
+            <a href="iniciativas_roots.php" class="text-decoration-none">
+                <div class="impact-card"
+                    style="background-image: url('front/multimedia/r2.png'); background-size: cover;">
+                </div>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura</p>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="impact-card" style="background-image: url('front/multimedia/r3.png'); background-size: cover;">
-            </div>
-            <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local</p>
+            <a href="impulso_local.php" class="text-decoration-none">
+                <div class="impact-card"
+                    style="background-image: url('front/multimedia/r3.png'); background-size: cover;">
+                </div>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local</p>
+            </a>
         </div>
     </div>
 </div>
