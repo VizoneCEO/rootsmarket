@@ -7,23 +7,26 @@ require_once(__DIR__ . '/conection/db.php');
 // --- VERIFICACIÓN DE SEGURIDAD ---
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') {
     $_SESSION['error_message'] = "Acceso denegado. No tienes permisos para esta acción.";
-    header('Location: /front/login.php'); // Redirige al login si no es admin
+    header('Location: ../../login.php'); // Redirigue al login si no es admin
     exit();
 }
 
 // --- CONFIGURACIÓN PARA SUBIDA DE IMÁGENES ---
 // Las imágenes se guardarán en la carpeta /front/multimedia/catalogos/
-$upload_dir = '/front/multimedia/catalogos/';
-$target_directory = $_SERVER['DOCUMENT_ROOT'] . $upload_dir;
+$upload_dir = 'front/multimedia/catalogos/'; // Ruta relativa para BD (sin / inicial)
+$target_directory = dirname(__DIR__) . '/' . $upload_dir; // Ruta absoluta del sistema de archivos
 
 // Asegurarse de que el directorio de subida exista, si no, lo crea.
 if (!file_exists($target_directory)) {
-    mkdir($target_directory, 0777, true);
+    if (!mkdir($target_directory, 0777, true)) {
+        error_log("No se pudo crear el directorio: " . $target_directory);
+    }
 }
 
 // --- CONTROLADOR PRINCIPAL DE ACCIONES ---
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
+    $active_tab = $_POST['active_tab'] ?? 'catalogs'; // Capture the tab or default to 'catalogs'
 
     try {
         switch ($action) {
@@ -33,7 +36,8 @@ if (isset($_GET['action'])) {
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (empty(trim($_POST['nombre']))) {
                         $_SESSION['error_message'] = "El nombre del catálogo no puede estar vacío.";
-                        header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+                        $_SESSION['error_message'] = "El nombre del catálogo no puede estar vacío.";
+                        header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
                         exit();
                     }
 
@@ -41,24 +45,38 @@ if (isset($_GET['action'])) {
                     $descripcion = trim($_POST['descripcion']);
                     $estatus = $_POST['estatus'];
                     $imagen_url = null;
+                    $icono_url = null;
 
-                    // Si se subió una imagen, procesarla.
+                    // Procesar Imagen Principal
                     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
                         $file_name = uniqid() . '-' . basename($_FILES["imagen"]["name"]);
                         $target_file = $target_directory . $file_name;
 
                         if (move_uploaded_file($_FILES["imagen"]["tmp_name"], $target_file)) {
-                            // Guardar la ruta relativa en la base de datos.
                             $imagen_url = $upload_dir . $file_name;
                         } else {
-                           $_SESSION['error_message'] = "Hubo un error al subir la imagen.";
-                           header('Location: /front/admin/perfilAdmin.php?page=configuracion');
-                           exit();
+                            $_SESSION['error_message'] = "Hubo un error al subir la imagen principal.";
+                            header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
+                            exit();
                         }
                     }
 
-                    $stmt = $pdo->prepare("INSERT INTO catalogos (nombre, descripcion, estatus, imagen_url) VALUES (?, ?, ?, ?)");
-                    $stmt->execute([$nombre, $descripcion, $estatus, $imagen_url]);
+                    // Procesar Icono (Móvil)
+                    if (isset($_FILES['icono']) && $_FILES['icono']['error'] == 0) {
+                        $file_name_icon = uniqid() . '-icon-' . basename($_FILES["icono"]["name"]);
+                        $target_file_icon = $target_directory . $file_name_icon;
+
+                        if (move_uploaded_file($_FILES["icono"]["tmp_name"], $target_file_icon)) {
+                            $icono_url = $upload_dir . $file_name_icon;
+                        } else {
+                            $_SESSION['error_message'] = "Hubo un error al subir el icono.";
+                            header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
+                            exit();
+                        }
+                    }
+
+                    $stmt = $pdo->prepare("INSERT INTO catalogos (nombre, descripcion, estatus, imagen_url, icono_url) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$nombre, $descripcion, $estatus, $imagen_url, $icono_url]);
 
                     $_SESSION['success_message'] = "Catálogo '" . htmlspecialchars($nombre) . "' creado exitosamente.";
                 }
@@ -66,10 +84,11 @@ if (isset($_GET['action'])) {
 
             // --- ACCIÓN: ACTUALIZAR UN CATÁLOGO EXISTENTE ---
             case 'update':
-                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (empty(trim($_POST['nombre'])) || empty($_POST['catalog_id'])) {
                         $_SESSION['error_message'] = "Faltan datos para actualizar el catálogo.";
-                        header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+                        $_SESSION['error_message'] = "Faltan datos para actualizar el catálogo.";
+                        header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
                         exit();
                     }
 
@@ -78,35 +97,52 @@ if (isset($_GET['action'])) {
                     $descripcion = trim($_POST['descripcion']);
                     $estatus = $_POST['estatus'];
 
-                    // Obtener la URL de la imagen actual para poder borrarla si se sube una nueva.
-                    $stmt_current_img = $pdo->prepare("SELECT imagen_url FROM catalogos WHERE id = ?");
-                    $stmt_current_img->execute([$id]);
-                    $current_image_url = $stmt_current_img->fetchColumn();
+                    // Obtener URLs actuales
+                    $stmt_current = $pdo->prepare("SELECT imagen_url, icono_url FROM catalogos WHERE id = ?");
+                    $stmt_current->execute([$id]);
+                    $current_data = $stmt_current->fetch(PDO::FETCH_ASSOC);
+
+                    $current_image_url = $current_data['imagen_url'];
+                    $current_icono_url = $current_data['icono_url'];
 
                     $imagen_url_a_actualizar = $current_image_url;
+                    $icono_url_a_actualizar = $current_icono_url;
 
-                    // Si se sube una nueva imagen.
+                    // Procesar Nueva Imagen Principal
                     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
-                        // Borrar la imagen anterior del servidor, si existe.
-                        if ($current_image_url && file_exists($_SERVER['DOCUMENT_ROOT'] . $current_image_url)) {
-                            unlink($_SERVER['DOCUMENT_ROOT'] . $current_image_url);
+                        if ($current_image_url && file_exists(dirname(__DIR__) . '/' . $current_image_url)) {
+                            unlink(dirname(__DIR__) . '/' . $current_image_url);
                         }
-
                         $file_name = uniqid() . '-' . basename($_FILES["imagen"]["name"]);
                         $target_file = $target_directory . $file_name;
-
                         if (move_uploaded_file($_FILES["imagen"]["tmp_name"], $target_file)) {
-                            $imagen_url_a_actualizar = $upload_dir . $file_name; // Nueva URL
+                            $imagen_url_a_actualizar = $upload_dir . $file_name;
                         } else {
                             $_SESSION['error_message'] = "Hubo un error al subir la nueva imagen.";
-                            header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+                            header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
+                            exit();
+                        }
+                    }
+
+                    // Procesar Nuevo Icono
+                    if (isset($_FILES['icono']) && $_FILES['icono']['error'] == 0) {
+                        if ($current_icono_url && file_exists(dirname(__DIR__) . '/' . $current_icono_url)) {
+                            unlink(dirname(__DIR__) . '/' . $current_icono_url);
+                        }
+                        $file_name_icon = uniqid() . '-icon-' . basename($_FILES["icono"]["name"]);
+                        $target_file_icon = $target_directory . $file_name_icon;
+                        if (move_uploaded_file($_FILES["icono"]["tmp_name"], $target_file_icon)) {
+                            $icono_url_a_actualizar = $upload_dir . $file_name_icon;
+                        } else {
+                            $_SESSION['error_message'] = "Hubo un error al subir el nuevo icono.";
+                            header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
                             exit();
                         }
                     }
 
                     // Actualizar la base de datos.
-                    $stmt = $pdo->prepare("UPDATE catalogos SET nombre = ?, descripcion = ?, estatus = ?, imagen_url = ? WHERE id = ?");
-                    $stmt->execute([$nombre, $descripcion, $estatus, $imagen_url_a_actualizar, $id]);
+                    $stmt = $pdo->prepare("UPDATE catalogos SET nombre = ?, descripcion = ?, estatus = ?, imagen_url = ?, icono_url = ? WHERE id = ?");
+                    $stmt->execute([$nombre, $descripcion, $estatus, $imagen_url_a_actualizar, $icono_url_a_actualizar, $id]);
 
                     $_SESSION['success_message'] = "Catálogo '" . htmlspecialchars($nombre) . "' actualizado exitosamente.";
                 }
@@ -117,13 +153,18 @@ if (isset($_GET['action'])) {
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $id = $_POST['catalog_id'];
 
-                    // Antes de borrar de la BD, obtener la URL de la imagen para borrarla del servidor.
-                    $stmt_select = $pdo->prepare("SELECT imagen_url FROM catalogos WHERE id = ?");
+                    // Antes de borrar de la BD, obtener URLs para borrar archivos.
+                    $stmt_select = $pdo->prepare("SELECT imagen_url, icono_url FROM catalogos WHERE id = ?");
                     $stmt_select->execute([$id]);
-                    $image_to_delete = $stmt_select->fetchColumn();
+                    $data_to_delete = $stmt_select->fetch(PDO::FETCH_ASSOC);
 
-                    if ($image_to_delete && file_exists($_SERVER['DOCUMENT_ROOT'] . $image_to_delete)) {
-                        unlink($_SERVER['DOCUMENT_ROOT'] . $image_to_delete);
+                    if ($data_to_delete) {
+                        if ($data_to_delete['imagen_url'] && file_exists(dirname(__DIR__) . '/' . $data_to_delete['imagen_url'])) {
+                            unlink(dirname(__DIR__) . '/' . $data_to_delete['imagen_url']);
+                        }
+                        if ($data_to_delete['icono_url'] && file_exists(dirname(__DIR__) . '/' . $data_to_delete['icono_url'])) {
+                            unlink(dirname(__DIR__) . '/' . $data_to_delete['icono_url']);
+                        }
                     }
 
                     // Ahora sí, borrar el registro de la base de datos.
@@ -151,6 +192,7 @@ if (isset($_GET['action'])) {
 }
 
 // --- REDIRECCIÓN ---
-header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+// --- REDIRECCIÓN ---
+header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . (isset($active_tab) ? $active_tab : 'catalogs'));
 exit();
 ?>

@@ -142,7 +142,7 @@
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="hero-content">
+            <div class="hero-content pe-3">
                 <h3 class="fw-bold mb-3" style="color: #333;">Nuestro Objetivo</h3>
                 <p class="hero-desc">
                     En Roots, creemos que cada elección tiene poder. Por eso impulsamos iniciativas que conectan el

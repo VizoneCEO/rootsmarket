@@ -7,8 +7,10 @@ $limit_inicial = 50;
 $limit_actual = isset($_GET['ver_hasta']) ? (int) $_GET['ver_hasta'] : $limit_inicial;
 
 // Filtros (Categoría y Búsqueda)
+// Filtros (Categoría y Búsqueda)
 $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : 0;
 $busqueda = isset($_GET['q']) ? $_GET['q'] : null;
+$filtro_especial = isset($_GET['filter']) ? $_GET['filter'] : null; // Nuevo filtro
 
 try {
     // A) OBTENER CATEGORÍAS PARA EL SELECT (Y GRID MOVIL) - Updated to fetch imagen_url
@@ -38,6 +40,18 @@ try {
         $params[] = "%$busqueda%";
         $params[] = "%$busqueda%";
     }
+
+    // Nuevo: Filtros Especiales (Temporada / Mejores)
+    if ($filtro_especial === 'temporada') {
+        $sql_productos .= " AND p.es_temporada = 1";
+    } elseif ($filtro_especial === 'mejores') {
+        $sql_productos .= " AND p.es_mejor = 1";
+    } elseif ($filtro_especial === 'nuevos') { // Mantiene compatibilidad con links del home
+        $sql_productos .= " AND p.es_novedad = 1";
+    } elseif ($filtro_especial === 'ofertas') { // Mantiene compatibilidad
+        $sql_productos .= " AND p.precio_oferta > 0";
+    }
+
 
     // Obtener el TOTAL de resultados (para el botón cargar más)
     $stmt_count = $pdo->prepare(str_replace("p.*, \n               (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal", "COUNT(*)", $sql_productos));
@@ -347,6 +361,46 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
         height: 70%;
         object-fit: contain;
     }
+
+    /* Botones de Filtro Especial */
+    .btn-filter-special {
+        border-radius: 50px;
+        padding: 8px 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-filter-special:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        color: white;
+    }
+
+    .btn-season {
+        background: linear-gradient(45deg, #FF9800, #F57C00);
+        color: white;
+    }
+
+    .btn-best {
+        background: linear-gradient(45deg, #4EAE3E, #2E7D32);
+        color: white;
+    }
+
+    .btn-season.active,
+    .btn-best.active {
+        box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
+        transform: translateY(1px);
+        opacity: 0.9;
+    }
 </style>
 
 <!-- ================= MOBILE VIEW (Categories Grid) ================= -->
@@ -372,7 +426,26 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
             </div>
         </div>
 
-        <!-- Row 2: Search Pill -->
+        <!-- Row 2: Filter Buttons (Mobile) - MOVED UP -->
+        <div class="d-flex gap-2 mb-3 overflow-auto pb-1 no-scrollbar" style="white-space: nowrap;">
+            <a href="tienda.php?filter=temporada"
+                class="btn btn-sm rounded-pill <?php echo ($filtro_especial === 'temporada') ? 'btn-warning text-white' : 'btn-outline-warning text-dark'; ?> fw-bold px-3"
+                style="border-width: 2px;">
+                <i class="fas fa-sun me-1"></i> Temporada
+            </a>
+            <a href="tienda.php?filter=mejores"
+                class="btn btn-sm rounded-pill <?php echo ($filtro_especial === 'mejores') ? 'btn-success text-white' : 'btn-outline-success text-dark'; ?> fw-bold px-3"
+                style="border-width: 2px;">
+                <i class="fas fa-star me-1"></i> Mejores
+            </a>
+            <?php if ($filtro_especial): ?>
+                <a href="tienda.php" class="btn btn-sm btn-secondary rounded-pill px-3 text-white">
+                    <i class="fas fa-times"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <!-- Row 3: Search Pill -->
         <div class="mb-3">
             <form action="tienda.php" method="GET" class="mobile-search-pill">
                 <i class="fas fa-search"></i>
@@ -389,7 +462,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
     <!-- Category Grid Body -->
     <div class="container pb-5" style="padding-top: 20px;">
-        <?php if ($categoria_id == 0 && empty($busqueda)): ?>
+        <?php if ($categoria_id == 0 && empty($busqueda) && empty($filtro_especial)): ?>
             <!-- SHOW CATEGORY GRID -->
             <div class="row g-3">
                 <?php foreach ($categorias as $index => $cat): ?>
@@ -416,16 +489,14 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
         <?php else: ?>
             <!-- SHOW PRODUCT LIST (Filtered) inside Mobile Layout -->
-            <!-- We reuse the logic below but maybe just ensure it renders well or provide a back button? -->
-            <div class="d-flex align-items-center mb-3">
+            <div class="d-flex align-items-center mb-3 px-3">
                 <a href="tienda.php" class="text-dark me-3"><i class="fas fa-arrow-left"></i></a>
                 <h5 class="m-0 fw-bold">Resultados</h5>
             </div>
 
             <!-- Render Products Grid Mobile -->
-            <div class="row g-2">
+            <div class="row g-2 px-2">
                 <?php foreach ($productos as $prod): ?>
-                    <!-- Mobile Vertical Card Style reuse or simplified -->
                     <div class="col-6">
                         <div class="product-card-figma" style="margin-bottom: 1rem;">
                             <div class="img-placeholder" style="border-radius: 12px; margin-bottom: 0.5rem;">
@@ -472,15 +543,16 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
     </div>
 </div>
 
-
 <!-- ================= DESKTOP VIEW (Existing) ================= -->
 <div class="container my-5 d-none d-lg-block">
 
     <h2 class="text-center fw-bold mb-4" style="color: #333;">Bienvenido a tu espacio orgánico</h2>
     <hr class="mb-5">
 
-    <div class="row filters-row gx-3 gy-3">
-        <div class="col-md-4">
+    <!-- FILTERS ROW with BUTTONS INLINE -->
+    <div class="row filters-row gx-3 gy-3 align-items-center">
+        <!-- Categories Select -->
+        <div class="col-md-3">
             <select class="form-select-custom" id="filtroCategoria" onchange="aplicarFiltros()">
                 <option value="0">Todas las Categorías</option>
                 <?php foreach ($categorias as $cat): ?>
@@ -491,9 +563,29 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-md-8">
+
+        <!-- Search Input -->
+        <div class="col-md-5">
             <input type="text" class="form-input-custom" id="buscadorTienda"
                 placeholder="Busca tu producto por nombre..." value="<?php echo htmlspecialchars($busqueda ?? ''); ?>">
+        </div>
+
+        <!-- Filter Buttons (Same Row) -->
+        <div class="col-md-4 d-flex justify-content-end gap-2">
+            <a href="tienda.php?filter=temporada"
+                class="btn-filter-special btn-season <?php echo ($filtro_especial === 'temporada') ? 'active' : ''; ?>">
+                <i class="fas fa-sun"></i> Temporada
+            </a>
+            <a href="tienda.php?filter=mejores"
+                class="btn-filter-special btn-best <?php echo ($filtro_especial === 'mejores') ? 'active' : ''; ?>">
+                <i class="fas fa-star"></i> Mejores
+            </a>
+            <?php if ($filtro_especial): ?>
+                <a href="tienda.php" class="btn btn-outline-secondary rounded-pill d-flex align-items-center"
+                    style="padding: 8px 15px; font-size: 0.9rem;">
+                    <i class="fas fa-times"></i>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 

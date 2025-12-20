@@ -156,7 +156,7 @@
     </div>
 
     <!-- Intro Text -->
-    <div class="mb-5">
+    <div class="mb-5 px-3 px-md-0">
         <h2 class="intro-title">Impulso Local</h2>
         <h3 class="intro-subtitle">Apoya lo que nace aquí.</h3>
         <p class="intro-text">
@@ -181,7 +181,7 @@
     </div>
 
     <!-- How It Works -->
-    <div class="mb-5">
+    <div class="mb-5 px-3 px-md-0">
         <h3 class="how-title">¿Cómo Funciona?</h3>
 
         <div class="mb-4">

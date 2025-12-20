@@ -7,20 +7,25 @@ require_once(__DIR__ . '/conection/db.php');
 // --- VERIFICACIÓN DE SEGURIDAD ---
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') {
     $_SESSION['error_message'] = "Acceso denegado. No tienes permisos para esta acción.";
-    header('Location: /front/login.php');
+    header('Location: ../../login.php');
     exit();
 }
 
 // --- CONFIGURACIÓN PARA SUBIDA DE IMÁGENES ---
-$upload_dir = '/front/multimedia/productos/';
-$target_directory = $_SERVER['DOCUMENT_ROOT'] . $upload_dir;
+// --- CONFIGURACIÓN PARA SUBIDA DE IMÁGENES ---
+$upload_dir = 'front/multimedia/productos/'; // Ruta relativa para BD
+$target_directory = dirname(__DIR__) . '/' . $upload_dir; // Ruta absoluta del sistema de archivos
+
 if (!file_exists($target_directory)) {
-    mkdir($target_directory, 0777, true);
+    if (!mkdir($target_directory, 0777, true)) {
+        error_log("No se pudo crear el directorio: " . $target_directory);
+    }
 }
 
 // --- CONTROLADOR PRINCIPAL ---
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
+    $active_tab = $_POST['active_tab'] ?? 'catalog'; // Capture the tab or default to 'catalog'
 
     try {
         switch ($action) {
@@ -29,7 +34,8 @@ if (isset($_GET['action'])) {
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (empty(trim($_POST['nombre'])) || empty(trim($_POST['sku'])) || empty($_POST['precio_venta']) || empty($_POST['catalogo_id'])) {
                         $_SESSION['error_message'] = "Los campos Nombre, SKU, Precio de Venta y Catálogo son obligatorios.";
-                        header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+                        $_SESSION['error_message'] = "Los campos Nombre, SKU, Precio de Venta y Catálogo son obligatorios.";
+                        header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
                         exit();
                     }
 
@@ -43,15 +49,19 @@ if (isset($_GET['action'])) {
 
                     $stmt_producto = $pdo->prepare($sql_producto);
                     $stmt_producto->execute([
-                        $_POST['catalogo_id'], trim($_POST['nombre']), trim($_POST['sku']),
+                        $_POST['catalogo_id'],
+                        trim($_POST['nombre']),
+                        trim($_POST['sku']),
                         empty(trim($_POST['descripcion_corta'])) ? null : trim($_POST['descripcion_corta']),
                         empty(trim($_POST['descripcion_larga'])) ? null : trim($_POST['descripcion_larga']),
                         empty($_POST['precio_compra']) ? null : $_POST['precio_compra'],
                         $_POST['precio_venta'],
                         empty($_POST['precio_oferta']) ? null : $_POST['precio_oferta'],
                         empty(trim($_POST['origen'])) ? null : trim($_POST['origen']),
-                        isset($_POST['es_organico']) ? 1 : 0, isset($_POST['es_vegano']) ? 1 : 0,
-                        isset($_POST['es_vegetariano']) ? 1 : 0, isset($_POST['es_sin_gluten']) ? 1 : 0,
+                        isset($_POST['es_organico']) ? 1 : 0,
+                        isset($_POST['es_vegano']) ? 1 : 0,
+                        isset($_POST['es_vegetariano']) ? 1 : 0,
+                        isset($_POST['es_sin_gluten']) ? 1 : 0,
                         empty(trim($_POST['porcion_info'])) ? null : trim($_POST['porcion_info']),
                         empty($_POST['calorias']) ? null : $_POST['calorias'],
                         empty($_POST['proteinas_g']) ? null : $_POST['proteinas_g'],
@@ -100,7 +110,8 @@ if (isset($_GET['action'])) {
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (empty($_POST['product_id']) || empty(trim($_POST['nombre'])) || empty(trim($_POST['sku'])) || empty($_POST['precio_venta']) || empty($_POST['catalogo_id'])) {
                         $_SESSION['error_message'] = "Faltan datos obligatorios para actualizar el producto.";
-                        header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+                        $_SESSION['error_message'] = "Faltan datos obligatorios para actualizar el producto.";
+                        header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . $active_tab);
                         exit();
                     }
 
@@ -116,15 +127,19 @@ if (isset($_GET['action'])) {
 
                     $stmt_update = $pdo->prepare($sql_update);
                     $stmt_update->execute([
-                        $_POST['catalogo_id'], trim($_POST['nombre']), trim($_POST['sku']),
+                        $_POST['catalogo_id'],
+                        trim($_POST['nombre']),
+                        trim($_POST['sku']),
                         empty(trim($_POST['descripcion_corta'])) ? null : trim($_POST['descripcion_corta']),
                         empty(trim($_POST['descripcion_larga'])) ? null : trim($_POST['descripcion_larga']),
                         empty($_POST['precio_compra']) ? null : $_POST['precio_compra'],
                         $_POST['precio_venta'],
                         empty($_POST['precio_oferta']) ? null : $_POST['precio_oferta'],
                         empty(trim($_POST['origen'])) ? null : trim($_POST['origen']),
-                        isset($_POST['es_organico']) ? 1 : 0, isset($_POST['es_vegano']) ? 1 : 0,
-                        isset($_POST['es_vegetariano']) ? 1 : 0, isset($_POST['es_sin_gluten']) ? 1 : 0,
+                        isset($_POST['es_organico']) ? 1 : 0,
+                        isset($_POST['es_vegano']) ? 1 : 0,
+                        isset($_POST['es_vegetariano']) ? 1 : 0,
+                        isset($_POST['es_sin_gluten']) ? 1 : 0,
                         empty(trim($_POST['porcion_info'])) ? null : trim($_POST['porcion_info']),
                         empty($_POST['calorias']) ? null : $_POST['calorias'],
                         empty($_POST['proteinas_g']) ? null : $_POST['proteinas_g'],
@@ -159,7 +174,7 @@ if (isset($_GET['action'])) {
 
                         foreach ($imagenes as $imagen_url) {
                             // Asegurar ruta correcta eliminando slash inicial si existe
-                            $file_path = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($imagen_url, '/');
+                            $file_path = dirname(__DIR__, 2) . '/' . ltrim($imagen_url, '/');
                             if (file_exists($file_path)) {
                                 unlink($file_path);
                             }
@@ -174,6 +189,47 @@ if (isset($_GET['action'])) {
 
                         $pdo->commit();
                         $_SESSION['success_message'] = "Producto eliminado exitosamente.";
+                    }
+                }
+                break;
+
+            // --- ACCIÓN: ACTUALIZAR ESTATUS BOOLEANO (AJAX) ---
+            case 'toggle_status':
+                // Nota: Se espera una petición AJAX POST
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    // Leer datos JSON si vienen en el cuerpo
+                    $input = json_decode(file_get_contents('php://input'), true);
+
+                    $prodId = $input['product_id'] ?? null;
+                    $field = $input['field'] ?? null;
+                    $value = $input['value'] ?? null;
+
+                    // Lista blanca de campos permitidos para seguridad
+                    $allowedFields = ['es_temporada', 'es_mejor'];
+
+                    if ($prodId && in_array($field, $allowedFields) && isset($value)) {
+                        try {
+                            // Sanitizar valor a 0 o 1
+                            $val = $value ? 1 : 0;
+
+                            $stmt = $pdo->prepare("UPDATE productos SET $field = ? WHERE id = ?");
+                            $stmt->execute([$val, $prodId]);
+
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => true]);
+                            exit;
+
+                        } catch (PDOException $e) {
+                            header('Content-Type: application/json');
+                            http_response_code(500);
+                            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            exit;
+                        }
+                    } else {
+                        header('Content-Type: application/json');
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'error' => 'Datos inválidos']);
+                        exit;
                     }
                 }
                 break;
@@ -198,6 +254,7 @@ if (isset($_GET['action'])) {
 }
 
 // --- REDIRECCIÓN ---
-header('Location: /front/admin/perfilAdmin.php?page=configuracion');
+// --- REDIRECCIÓN ---
+header('Location: ../front/admin/perfilAdmin.php?page=configuracion&tab=' . (isset($active_tab) ? $active_tab : 'catalog'));
 exit();
 ?>

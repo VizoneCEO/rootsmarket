@@ -12,20 +12,25 @@ session_start();
 // El archivo db.php debe estar en el mismo directorio que aut.php para que funcione esta ruta
 require_once(__DIR__ . '/../conection/db.php');
 // Incluir la librería de cliente de Google para PHP.
-require_once(__DIR__ . '/../../vendor/autoload.php');
+$vendorPath = __DIR__ . '/../../vendor/autoload.php';
+$googleClient = null;
 
-// Configuración de Google (con tus credenciales)
-$googleClient = new Google_Client();
-$googleClient->setClientId('1034619608714-38jjhagukll7qv3us12demuf1qs0r5ma.apps.googleusercontent.com');
-$googleClient->setClientSecret('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');
-// La URL de redireccionamiento debe coincidir con la que configuraste en la consola de Google
-$googleClient->setRedirectUri('https://rootsmarket.com.mx/back/login/aut.php?action=google_callback');
-$googleClient->addScope('email');
-$googleClient->addScope('profile');
+if (file_exists($vendorPath)) {
+    require_once($vendorPath);
+    // Configuración de Google (con tus credenciales)
+    $googleClient = new Google_Client();
+    $googleClient->setClientId('1034619608714-38jjhagukll7qv3us12demuf1qs0r5ma.apps.googleusercontent.com');
+    $googleClient->setClientSecret('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');
+    // La URL de redireccionamiento debe coincidir con la que configuraste en la consola de Google
+    $googleClient->setRedirectUri('https://rootsmarket.com.mx/back/login/aut.php?action=google_callback');
+    $googleClient->addScope('email');
+    $googleClient->addScope('profile');
+}
 
 
 // --- NUEVA FUNCIÓN PARA REDIRIGIR BASADO EN EL ROL ---
-function redirigirPorRol($rol) {
+function redirigirPorRol($rol)
+{
     switch ($rol) {
         case 'cliente':
             header('Location: ../../front/cliente/perfil.php');
@@ -91,15 +96,21 @@ if (isset($_GET['action'])) {
             break;
 
         // --- CASO 2: INICIO DEL LOGIN CON GOOGLE (SIN CAMBIOS) ---
+        // --- CASO 2: INICIO DEL LOGIN CON GOOGLE (SIN CAMBIOS) ---
         case 'login_google':
-            $authUrl = $googleClient->createAuthUrl();
-            header('Location: ' . $authUrl);
+            if ($googleClient) {
+                $authUrl = $googleClient->createAuthUrl();
+                header('Location: ' . $authUrl);
+            } else {
+                header('Location: ../../login.php?error=google_not_configured');
+            }
             exit();
             break;
 
         // --- CASO 3: CALLBACK DE GOOGLE (MODIFICADO) ---
+        // --- CASO 3: CALLBACK DE GOOGLE (MODIFICADO) ---
         case 'google_callback':
-            if (isset($_GET['code'])) {
+            if ($googleClient && isset($_GET['code'])) {
                 $token = $googleClient->fetchAccessTokenWithAuthCode($_GET['code']);
                 $googleClient->setAccessToken($token['access_token']);
 

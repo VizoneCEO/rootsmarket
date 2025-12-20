@@ -13,22 +13,67 @@ try {
     $categorias = []; // Fallback vacío si hay error
 }
 
-// B) Obtener Productos "Top" (Lo Mejor de Roots)
-// Criterio: Productos activos, ordenados por calificación o ID, limitados a 4
+// B) Obtener Productos "Top" (Lo Mejor de Roots) - Ahora filtrado por flag "es_mejor"
+// Criterio: Productos activos que tienen es_mejor = 1
 try {
-    // Nota: Ajustamos la consulta para obtener la imagen principal de la tabla relacionada
     $stmt_prod = $pdo->prepare("
         SELECT p.*, 
                (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal 
         FROM productos p 
-        WHERE p.estatus = 'activo' 
-        ORDER BY p.calificacion DESC, p.id DESC 
-        LIMIT 4
+        WHERE p.estatus = 'activo' AND p.es_mejor = 1
+        ORDER BY p.id DESC 
+        LIMIT 8
     ");
     $stmt_prod->execute();
     $productos_top = $stmt_prod->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $productos_top = [];
+}
+
+// C) Obtener "Novedades" (Productos más recientes)
+try {
+    $stmt_nov = $pdo->prepare("
+        SELECT p.*, 
+               (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal 
+        FROM productos p 
+        WHERE p.estatus = 'activo' AND p.es_novedad = 1
+        ORDER BY p.id DESC 
+        LIMIT 8
+    ");
+    $stmt_nov->execute();
+    $productos_novedades = $stmt_nov->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fallback: Si no hay marcados como novedad, traer los últimos creados
+    if (empty($productos_novedades)) {
+        $stmt_nov_fallback = $pdo->prepare("
+            SELECT p.*, 
+                   (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal 
+            FROM productos p 
+            WHERE p.estatus = 'activo' 
+            ORDER BY p.id DESC 
+            LIMIT 8
+        ");
+        $stmt_nov_fallback->execute();
+        $productos_novedades = $stmt_nov_fallback->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    $productos_novedades = [];
+}
+
+// D) Obtener Productos de Temporada
+try {
+    $stmt_temp = $pdo->prepare("
+        SELECT p.*, 
+               (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal 
+        FROM productos p 
+        WHERE p.estatus = 'activo' AND p.es_temporada = 1
+        ORDER BY p.id DESC 
+        LIMIT 8
+    ");
+    $stmt_temp->execute();
+    $productos_temporada = $stmt_temp->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $productos_temporada = [];
 }
 ?>
 
@@ -551,20 +596,30 @@ try {
     </div>
 
     <!-- MOBILE CATEGORIES SCROLL -->
-    <div class="mobile-cat-scroll d-flex d-lg-none">
-        <?php foreach ($categorias as $cat): ?>
-            <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="mobile-cat-item">
-                <div class="mobile-cat-icon-circle">
-                    <!-- Placeholder generic icon or real icon -->
-                    <?php if (!empty($cat['imagen_url'])): ?>
-                        <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>" alt="Icon">
-                    <?php else: ?>
-                        <img src="front/multimedia/cat_placeholder.png" alt="Icon">
-                    <?php endif; ?>
-                </div>
-                <span class="mobile-cat-name"><?php echo htmlspecialchars($cat['nombre']); ?></span>
-            </a>
-        <?php endforeach; ?>
+    <div class="position-relative d-lg-none">
+        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileCategories', -1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="mobile-cat-scroll" id="mobileCategories">
+            <?php foreach ($categorias as $cat): ?>
+                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="mobile-cat-item">
+                    <div class="mobile-cat-icon-circle">
+                        <!-- Placeholder generic icon or real icon -->
+                        <?php if (!empty($cat['icono_url'])): ?>
+                            <img src="<?php echo htmlspecialchars(ltrim($cat['icono_url'], '/')); ?>" alt="Icon">
+                        <?php else: ?>
+                            <img src="front/multimedia/cat_placeholder.png" alt="Icon">
+                        <?php endif; ?>
+                    </div>
+                    <span class="mobile-cat-name"><?php echo htmlspecialchars($cat['nombre']); ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileCategories', 1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+            <i class="fas fa-chevron-right"></i>
+        </button>
     </div>
 
     <!-- DESKTOP CATEGORIES CAROUSEL (Updated with Arrows) -->
@@ -603,11 +658,119 @@ try {
                 });
             }
         }
+        function scrollContainer(containerId, direction) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const scrollAmount = 280; // Approximate card width
+                container.scrollBy({
+                    left: direction * scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        }
     </script>
 </div>
 
 
-<!-- ================= NOVEDADES Y PROMOS ================= -->
+<!-- ================= SEASONAL PRODUCTS (New) ================= -->
+<?php if (!empty($productos_temporada)): ?>
+<div class="container section-padding pb-0">
+    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h2 class="section-title m-0">De Temporada</h2>
+    </div>
+
+    <!-- Mobile Carousel -->
+    <div class="position-relative d-lg-none">
+        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileSeasonal', -1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="horizontal-snap-slider" id="mobileSeasonal">
+            <?php foreach ($productos_temporada as $prod): ?>
+                <div class="snap-item">
+                    <div class="mobile-promo-card">
+                        <div class="mobile-promo-img-container">
+                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                 <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                             <?php endif; ?>
+
+                            <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
+                                <?php if (!empty($prod['imagen_principal'])): ?>
+                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                        alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                <?php else: ?>
+                                    <img src="front/multimedia/productos/default.png" alt="Producto">
+                                <?php endif; ?>
+                            </a>
+
+                            <button class="mobile-promo-add" onclick="addToCart(
+                                <?php echo $prod['id']; ?>,
+                                '<?php echo htmlspecialchars($prod['nombre']); ?>',
+                                <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
+                                '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
+                            )"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <h5 class="fw-bold mb-1 fs-6 text-truncate">
+                            <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
+                                <?php echo htmlspecialchars($prod['nombre']); ?>
+                            </a>
+                        </h5>
+                        <div class="d-flex align-items-center">
+                            <?php if ($prod['precio_oferta']): ?>
+                                <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                            <?php else: ?>
+                                <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileSeasonal', 1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Desktop Grid (Simple row for seasonals) -->
+    <div class="d-none d-lg-block">
+        <div class="row g-4">
+             <?php foreach (array_slice($productos_temporada, 0, 4) as $prod): ?>
+                <div class="col-md-3">
+                    <div class="product-card-minimal">
+                        <div class="product-placeholder">
+                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                 <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                             <?php endif; ?>
+                            <a href="producto.php?id=<?php echo $prod['id']; ?>" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                <?php if (!empty($prod['imagen_principal'])): ?>
+                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>" alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                <?php else: ?>
+                                    <img src="front/multimedia/productos/default.png" alt="Producto">
+                                <?php endif; ?>
+                            </a>
+                             <!-- Hover Add Button could go here -->
+                        </div>
+                        <h5 class="fw-bold mt-3 mb-1"><a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark"><?php echo htmlspecialchars($prod['nombre']); ?></a></h5>
+                        <div class="d-flex align-items-center gap-2">
+                             <?php if ($prod['precio_oferta']): ?>
+                                <span class="fw-bold text-success">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                <span class="text-muted text-decoration-line-through small">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                            <?php else: ?>
+                                <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+             <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 <div class="container section-padding" style="background-color: #fff;">
     <!-- Mobile Requirement: Green background for specific section? User said "Contenedor con fondo verde suave" for Novedades. Actually let's wrap just this section for mobile in green or global? "Contenedor con fondo verde suave" -->
 
@@ -618,52 +781,65 @@ try {
             <!-- <a href="#" class="text-success fw-bold">></a> -->
         </div>
 
-        <div class="horizontal-snap-slider">
-            <!-- Hand-picked items simulating the desktop Bento grid but converted to Product Cards for slider as requested -->
-            <!-- Item 1 -->
-            <div class="snap-item">
-                <div class="mobile-promo-card">
-                    <div class="mobile-promo-img-container">
-                        <span class="discount-badge">30%</span>
-                        <img src="front/multimedia/d1.png" alt="Temporada">
-                        <button class="mobile-promo-add"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <h5 class="fw-bold mb-1 fs-6">Temporada</h5>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold">$120.00</span>
-                        <span class="old-price">$170.00</span>
-                    </div>
-                </div>
+        <div class="position-relative">
+            <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobilePromos', -1)" type="button"
+                style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="horizontal-snap-slider" id="mobilePromos">
+                <?php if (!empty($productos_novedades)): ?>
+                    <?php foreach ($productos_novedades as $prod): ?>
+                        <div class="snap-item">
+                            <div class="mobile-promo-card">
+                                <div class="mobile-promo-img-container">
+                                    <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                        <?php
+                                        $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100);
+                                        ?>
+                                        <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                                    <?php endif; ?>
+
+                                    <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                        class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
+                                        <?php if (!empty($prod['imagen_principal'])): ?>
+                                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                        <?php else: ?>
+                                            <img src="front/multimedia/productos/default.png" alt="Producto">
+                                        <?php endif; ?>
+                                    </a>
+
+                                    <button class="mobile-promo-add" onclick="addToCart(
+                                        <?php echo $prod['id']; ?>,
+                                        '<?php echo htmlspecialchars($prod['nombre']); ?>',
+                                        <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
+                                        '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
+                                    )"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <h5 class="fw-bold mb-1 fs-6 text-truncate">
+                                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
+                                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                                    </a>
+                                </h5>
+                                <div class="d-flex align-items-center">
+                                    <?php if ($prod['precio_oferta']): ?>
+                                        <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                        <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                    <?php else: ?>
+                                        <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="text-center w-100 py-3 text-muted">Aún no hay novedades.</div>
+                <?php endif; ?>
             </div>
-            <!-- Item 2 -->
-            <div class="snap-item">
-                <div class="mobile-promo-card">
-                    <div class="mobile-promo-img-container">
-                        <span class="discount-badge">New</span>
-                        <img src="front/multimedia/d2.png" alt="Nuevos">
-                        <button class="mobile-promo-add"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <h5 class="fw-bold mb-1 fs-6">Nuevos Productos</h5>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold">$85.00</span>
-                    </div>
-                </div>
-            </div>
-            <!-- Item 3 -->
-            <div class="snap-item">
-                <div class="mobile-promo-card">
-                    <div class="mobile-promo-img-container">
-                        <span class="discount-badge">Offer</span>
-                        <img src="front/multimedia/d4.png" alt="Descuentos">
-                        <button class="mobile-promo-add"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <h5 class="fw-bold mb-1 fs-6">Descuentos</h5>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold">$200.00</span>
-                        <span class="old-price">$250.00</span>
-                    </div>
-                </div>
-            </div>
+            <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobilePromos', 1)" type="button"
+                style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 
@@ -727,10 +903,71 @@ try {
     <!-- Mobile view: Grid 2 columns. Desktop: Grid 4 columns (col-md-3) -->
     <!-- The existing code uses col-6 col-md-3 which is perfect for 2 columns on mobile. Just need to ensure style matches requirements. -->
 
-    <div class="row g-3 g-md-4">
+    <!-- MOBILE: CAROUSEL -->
+    <div class="d-lg-none position-relative">
+        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileBest', -1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="horizontal-snap-slider" id="mobileBest">
+            <?php if (!empty($productos_top)): ?>
+                <?php foreach ($productos_top as $prod): ?>
+                    <div class="snap-item">
+                        <div class="mobile-promo-card"> <!-- Reusing promo card style for consistency -->
+                            <div class="mobile-promo-img-container">
+                                <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                                <?php endif; ?>
+
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                    class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
+                                    <?php if (!empty($prod['imagen_principal'])): ?>
+                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                    <?php else: ?>
+                                        <img src="front/multimedia/productos/default.png" alt="Producto">
+                                    <?php endif; ?>
+                                </a>
+
+                                <button class="mobile-promo-add" onclick="addToCart(
+                                    <?php echo $prod['id']; ?>,
+                                    '<?php echo htmlspecialchars($prod['nombre']); ?>',
+                                    <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
+                                    '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
+                                )"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <h5 class="fw-bold mb-1 fs-6 text-truncate">
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
+                                    <?php echo htmlspecialchars($prod['nombre']); ?>
+                                </a>
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <?php if ($prod['precio_oferta']): ?>
+                                    <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                    <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                <?php else: ?>
+                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="w-100 text-center text-muted">Aún no hay favoritos.</div>
+            <?php endif; ?>
+        </div>
+        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileBest', 1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- DESKTOP: GRID (Original Layout) -->
+    <div class="row g-4 d-none d-lg-flex">
         <?php if (!empty($productos_top)): ?>
             <?php foreach ($productos_top as $prod): ?>
-                <div class="col-6 col-md-3">
+                <div class="col-md-3">
                     <div class="product-card-minimal">
                         <div class="product-placeholder">
                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
@@ -900,37 +1137,48 @@ try {
     </div>
 
     <!-- MOBILE IMPACT SLIDER (Horizontal) -->
-    <div class="d-flex d-lg-none" style="overflow-x: auto; padding-bottom: 15px;">
-        <!-- Card 1: Raíces Verdes -->
-        <a href="iniciativas_roots.php" class="text-decoration-none text-white d-block me-3">
-            <div class="impact-card-mobile"
-                style="background-image: url('front/multimedia/r1.png'); flex: 0 0 auto; margin-right:0;">
-                <div class="impact-badge-mobile">Iniciativa</div>
-                <div class="impact-text-mobile">Raíces Verdes</div>
-            </div>
-        </a>
-        <!-- Card 2: Cero Basura -->
-        <a href="iniciativas_roots.php" class="text-decoration-none text-white d-block me-3">
-            <div class="impact-card-mobile"
-                style="background-image: url('front/multimedia/r2.png'); flex: 0 0 auto; margin-right:0;">
-                <div class="impact-badge-mobile">Sostenible</div>
-                <div class="impact-text-mobile">Cero Basura</div>
-            </div>
-        </a>
-        <!-- Card 3: Impulso Local -->
-        <a href="impulso_local.php" class="text-decoration-none text-white d-block">
-            <div class="impact-card-mobile"
-                style="background-image: url('front/multimedia/r3.png'); flex: 0 0 auto; margin-right:0;">
-                <div class="impact-badge-mobile">Comunidad</div>
-                <div class="impact-text-mobile">Impulso Local</div>
-            </div>
-        </a>
+    <div class="position-relative d-lg-none">
+        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileImpact', -1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="d-flex" id="mobileImpact"
+            style="overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory;">
+            <!-- Card 1: Raíces Verdes -->
+            <a href="iniciativas.php" class="text-decoration-none text-white d-block me-3"
+                style="flex: 0 0 auto; scroll-snap-align: start;">
+                <div class="impact-card-mobile"
+                    style="background-image: url('front/multimedia/r1.png'); margin-right:0;">
+                    <div class="impact-text-mobile">Raíces Verdes</div>
+                </div>
+            </a>
+            <!-- Card 2: Cero Basura -->
+            <a href="iniciativas.php" class="text-decoration-none text-white d-block me-3"
+                style="flex: 0 0 auto; scroll-snap-align: start;">
+                <div class="impact-card-mobile"
+                    style="background-image: url('front/multimedia/r2.png'); margin-right:0;">
+                    <div class="impact-text-mobile">Cero Basura</div>
+                </div>
+            </a>
+            <!-- Card 3: Impulso Local -->
+            <a href="impulso_local.php" class="text-decoration-none text-white d-block"
+                style="flex: 0 0 auto; scroll-snap-align: start;">
+                <div class="impact-card-mobile"
+                    style="background-image: url('front/multimedia/r3.png'); margin-right:0;">
+                    <div class="impact-text-mobile">Impulso Local</div>
+                </div>
+            </a>
+        </div>
+        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileImpact', 1)" type="button"
+            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+            <i class="fas fa-chevron-right"></i>
+        </button>
     </div>
 
     <!-- DESKTOP IMPACT GRID (Existing) -->
     <div class="row g-4 d-none d-lg-flex">
         <div class="col-md-4">
-            <a href="iniciativas_roots.php" class="text-decoration-none">
+            <a href="iniciativas.php" class="text-decoration-none">
                 <div class="impact-card"
                     style="background-image: url('front/multimedia/r1.png'); background-size: cover;">
                 </div>
@@ -938,7 +1186,7 @@ try {
             </a>
         </div>
         <div class="col-md-4">
-            <a href="iniciativas_roots.php" class="text-decoration-none">
+            <a href="iniciativas.php" class="text-decoration-none">
                 <div class="impact-card"
                     style="background-image: url('front/multimedia/r2.png'); background-size: cover;">
                 </div>
