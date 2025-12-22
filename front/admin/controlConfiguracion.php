@@ -51,7 +51,12 @@ try {
     if ($filter_type === 'temporada') {
         $conditions[] = "p.es_temporada = 1";
     } elseif ($filter_type === 'mejores') {
+    } elseif ($filter_type === 'mejores') {
         $conditions[] = "p.es_mejor = 1";
+    } elseif ($filter_type === 'promocion') {
+        // Usa es_promocion OR precio_oferta > 0 if you want to be safe, but we decided to rely on es_promocion flag or create it properly.
+        // Given I updated product_manager to save es_promocion, we should use it.
+        $conditions[] = "p.es_promocion = 1";
     }
 
     $where_clause = "";
@@ -84,6 +89,14 @@ try {
 
 } catch (PDOException $e) {
     die("Error al consultar los productos: " . $e->getMessage());
+}
+
+// --- CONSULTA #4: OBTENER CONFIGURACIÓN ---
+try {
+    $stmt_config = $pdo->query("SELECT clave, valor FROM configuracion");
+    $configuracion = $stmt_config->fetchAll(PDO::FETCH_KEY_PAIR);
+} catch (PDOException $e) {
+    $configuracion = [];
 }
 //======================================================================
 //======================================================================
@@ -126,6 +139,11 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                 data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile"
                 aria-selected="<?php echo $activeTab === 'profile' ? 'true' : 'false'; ?>"><i
                     class="fas fa-user-shield me-2"></i>Admin Perfil</button></li>
+        <li class="nav-item" role="presentation"><button
+                class="nav-link <?php echo $activeTab === 'temporada' ? 'active' : ''; ?>" id="temporada-tab"
+                data-bs-toggle="tab" data-bs-target="#temporada" type="button" role="tab" aria-controls="temporada"
+                aria-selected="<?php echo $activeTab === 'temporada' ? 'true' : 'false'; ?>"><i
+                    class="fas fa-calendar-alt me-2"></i>Temporada</button></li>
     </ul>
 
     <div class="tab-content" id="configTabContent">
@@ -143,6 +161,7 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                             <option value="">Todos</option>
                             <option value="temporada" <?php echo ($filter_type === 'temporada') ? 'selected' : ''; ?>>De Temporada</option>
                             <option value="mejores" <?php echo ($filter_type === 'mejores') ? 'selected' : ''; ?>>Mejores</option>
+                            <option value="promocion" <?php echo ($filter_type === 'promocion') ? 'selected' : ''; ?>>En Promoción</option>
                         </select>
 
                         <input class="form-control me-2" type="search" name="q" placeholder="Buscar..." aria-label="Buscar" value="<?php echo htmlspecialchars($search_query); ?>">
@@ -386,9 +405,14 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                     <div class="col-md-3"><label for="precio_venta_prod" class="form-label">Precio de Venta
                             ($)</label><input type="number" step="0.01" class="form-control" id="precio_venta_prod"
                             name="precio_venta" required></div>
-                    <div class="col-md-3"><label for="precio_oferta_prod" class="form-label">Precio de Oferta
-                            ($)</label><input type="number" step="0.01" class="form-control" id="precio_oferta_prod"
-                            name="precio_oferta"></div>
+                    <div class="col-md-3">
+                        <label class="form-label d-block" style="margin-bottom: 2px;">Promoción</label>
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input" type="checkbox" id="es_promocion_prod" name="es_promocion" value="1" onchange="togglePromoInput(this)">
+                            <label class="form-check-label" for="es_promocion_prod">Activar</label>
+                        </div>
+                        <input type="number" step="0.01" class="form-control mt-1" id="precio_oferta_prod" name="precio_oferta" placeholder="Precio Promo $" style="display:none;">
+                    </div>
                     <div class="col-md-3">
                         <label for="catalogo_id_prod" class="form-label">Catálogo</label>
                         <select id="catalogo_id_prod" name="catalogo_id" class="form-select" required>
@@ -419,6 +443,9 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                         <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox"
                                 id="es_sin_gluten_prod" name="es_sin_gluten" value="1"><label class="form-check-label"
                                 for="es_sin_gluten_prod">Sin Gluten</label></div>
+                        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox"
+                                id="tiene_azucar_prod" name="tiene_azucar" value="1"><label class="form-check-label"
+                                for="tiene_azucar_prod">Tiene Azúcar</label></div>
                     </div>
                 </div>
                 <h6>Información Nutricional</h6>
@@ -564,6 +591,38 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
     aria-labelledby="profile-tab">
     <p>Aquí irá el formulario para que el administrador edite su perfil.</p>
 </div>
+
+
+<div class="tab-pane fade <?php echo $activeTab === 'temporada' ? 'show active' : ''; ?>" id="temporada" role="tabpanel" aria-labelledby="temporada-tab">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Configuración de Temporada</h5>
+        </div>
+        <div class="card-body">
+            <form action="../../back/config_manager.php" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="nombre_temporada" class="form-label">Nombre de la Temporada</label>
+                    <input type="text" class="form-control" id="nombre_temporada" name="nombre_temporada" 
+                           value="<?php echo htmlspecialchars($configuracion['nombre_temporada'] ?? 'Temporada'); ?>" required>
+                    <div class="form-text">Este nombre aparecerá en el botón de filtros en Tienda y Categorías.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="imagen_temporada" class="form-label">Imagen de Temporada (Home)</label>
+                    <input type="file" class="form-control mb-2" id="imagen_temporada" name="imagen_temporada" accept="image/*">
+                    <?php if (!empty($configuracion['imagen_temporada'])): ?>
+                        <div class="border p-2 rounded d-inline-block bg-light">
+                            <small class="d-block mb-1 text-muted">Imagen Actual:</small>
+                            <img src="../../<?php echo htmlspecialchars(ltrim($configuracion['imagen_temporada'], '/')); ?>" 
+                                 alt="Imagen Temporada" style="max-height: 150px; width: auto;">
+                        </div>
+                    <?php endif; ?>
+                    <div class="form-text">Esta imagen se mostrará en el banner o sección destacada de temporada en el inicio.</div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Configuración</button>
+            </form>
+        </div>
+    </div>
+</div>
 </div>
 </div>
 
@@ -668,18 +727,33 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                 <h5 class="modal-title" id="editProductModalLabel">Editar Producto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>
-        <form id="editProductForm" action="../../back/product_manager.php?action=update" method="POST"
-            enctype="multipart/form-data">
-            <!-- active_tab hidden input will be injected via JS or captured from template if included there, but best to be explicit here since this form is NOT the one in addProduct tab -->
-            <input type="hidden" name="active_tab" value="catalog">
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form id="editProductForm" action="../../back/product_manager.php?action=update" method="POST"
+                enctype="multipart/form-data">
+                <!-- active_tab hidden input will be injected via JS or captured from template if included there, but best to be explicit here since this form is NOT the one in addProduct tab -->
+                <input type="hidden" name="active_tab" value="catalog">
 
-            </div>
-        </form>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <!-- Button to submit is inside the form template? No, the add form has a submit button.
+                         Wait, the add form template INCLUDES the submit button "Guardar Producto".
+                         When we inject it into modal, we might have TWO buttons?
+                         The add form (line 494) has a submit button.
+                         
+                         If we inject the WHOLE content of add form into modal-body...
+                         The modal-footer here (line 735) has "Cancelar".
+                         The template also brings the "Guardar Producto" button.
+                         
+                         Usually edit modal buttons are in footer.
+                         If the template brings the button, it will be inside modal-body.
+                         That's a bit duplicate but maybe acceptable or intended.
+                         
+                         For now, I'm just fixing the background issue. 
+                      -->
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 </div>
@@ -708,6 +782,21 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
 </div>
 
 <script>
+    function togglePromoInput(checkbox) {
+        // Find the input relative to the checkbox (sibling container)
+        // Structure: div(Switch) -> sibling input#precio_oferta_prod
+        const parentDiv = checkbox.closest('.col-md-3');
+        const promoInput = parentDiv.querySelector('input[type="number"]');
+        if (checkbox.checked) {
+            promoInput.style.display = 'block';
+            promoInput.required = true;
+        } else {
+            promoInput.style.display = 'none';
+            promoInput.required = false;
+            promoInput.value = '';
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         // --- SCRIPTS PARA MODALES DE CATÁLOGOS ---
         const editCatalogModal = document.getElementById('editCatalogModal');
@@ -797,6 +886,32 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                 form.querySelector('[name="sodio_mg"]').value = producto.sodio_mg || '';
                 form.querySelector('[name="calificacion"]').value = producto.calificacion || '';
                 form.querySelector('[name="estatus"]').value = producto.estatus || 'borrador';
+
+                // Handle Sugar
+                const sugarCheck = form.querySelector('[name="tiene_azucar"]');
+                if(sugarCheck) sugarCheck.checked = producto.tiene_azucar == 1;
+
+                // Handle Promotion
+                const promoCheck = form.querySelector('[name="es_promocion"]');
+                const promoInput = form.querySelector('[name="precio_oferta"]');
+                
+                // If price offer exists and is > 0, assume promotion is active (or check es_promocion flag if reliable)
+                // We previously decided to use es_promocion flag + precio_oferta
+                // But product_manager.php didn't save es_promocion flag before.
+                // So for existing products, we rely on precio_oferta > 0 ?? Or assume if we start saving it now.
+                // Let's rely on producto.es_promocion if we start saving it.
+                // Or check price too.
+                const hasPromo = producto.es_promocion == 1 || (producto.precio_oferta > 0);
+                
+                if(promoCheck) {
+                    promoCheck.checked = hasPromo;
+                    // Manually trigger display update
+                    if (hasPromo) {
+                        promoInput.style.display = 'block';
+                    } else {
+                        promoInput.style.display = 'none';
+                    }
+                }
             });
         }
 

@@ -334,7 +334,7 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 main-nav-links">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="tienda.php">Categorías</a></li>
-                    <li class="nav-item"><a class="nav-link" href="iniciativas.php">Iniciativas Roots</a></li>
+                    <li class="nav-item"><a class="nav-link" href="iniciativas.php">Nosotros</a></li>
                 </ul>
 
                 <div class="d-none d-lg-flex align-items-center w-100 justify-content-end">

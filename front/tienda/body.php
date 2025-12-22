@@ -12,6 +12,15 @@ $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : 0;
 $busqueda = isset($_GET['q']) ? $_GET['q'] : null;
 $filtro_especial = isset($_GET['filter']) ? $_GET['filter'] : null; // Nuevo filtro
 
+// C) OBTENER CONFIGURACIÓN
+try {
+    $stmt_config = $pdo->query("SELECT clave, valor FROM configuracion");
+    $configuracion = $stmt_config->fetchAll(PDO::FETCH_KEY_PAIR);
+    $nombre_temporada = $configuracion['nombre_temporada'] ?? 'Temporada';
+} catch (PDOException $e) {
+    $nombre_temporada = 'Temporada';
+}
+
 try {
     // A) OBTENER CATEGORÍAS PARA EL SELECT (Y GRID MOVIL) - Updated to fetch imagen_url
     // Assuming 'imagen_url' exists as per index.php usage.
@@ -50,6 +59,8 @@ try {
         $sql_productos .= " AND p.es_novedad = 1";
     } elseif ($filtro_especial === 'ofertas') { // Mantiene compatibilidad
         $sql_productos .= " AND p.precio_oferta > 0";
+    } elseif ($filtro_especial === 'promocion') {
+        $sql_productos .= " AND p.es_promocion = 1";
     }
 
 
@@ -431,12 +442,17 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
             <a href="tienda.php?filter=temporada"
                 class="btn btn-sm rounded-pill <?php echo ($filtro_especial === 'temporada') ? 'btn-warning text-white' : 'btn-outline-warning text-dark'; ?> fw-bold px-3"
                 style="border-width: 2px;">
-                <i class="fas fa-sun me-1"></i> Temporada
+                <i class="fas fa-sun me-1"></i> <?php echo htmlspecialchars($nombre_temporada); ?>
             </a>
             <a href="tienda.php?filter=mejores"
                 class="btn btn-sm rounded-pill <?php echo ($filtro_especial === 'mejores') ? 'btn-success text-white' : 'btn-outline-success text-dark'; ?> fw-bold px-3"
                 style="border-width: 2px;">
                 <i class="fas fa-star me-1"></i> Mejores
+            </a>
+            <a href="tienda.php?filter=promocion"
+                class="btn btn-sm rounded-pill <?php echo ($filtro_especial === 'promocion') ? 'btn-danger text-white' : 'btn-outline-danger text-dark'; ?> fw-bold px-3"
+                style="border-width: 2px;">
+                <i class="fas fa-tag me-1"></i> Promociones
             </a>
             <?php if ($filtro_especial): ?>
                 <a href="tienda.php" class="btn btn-sm btn-secondary rounded-pill px-3 text-white">
@@ -456,7 +472,30 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
         <!-- Row 3: Title -->
         <div>
-            <h5 class="fw-bold m-0" style="color: #333;">All categories</h5>
+            <h5 class="fw-bold m-0" style="color: #333;">
+                <?php
+                $titulo_header = "Todas las categorías";
+                if ($busqueda)
+                    $titulo_header = "Resultados: " . htmlspecialchars($busqueda);
+                elseif ($filtro_especial == 'temporada')
+                    $titulo_header = htmlspecialchars($nombre_temporada);
+                elseif ($filtro_especial == 'mejores')
+                    $titulo_header = "Lo Mejor";
+                elseif ($filtro_especial == 'promocion')
+                    $titulo_header = "Promociones";
+                elseif ($categoria_id > 0) {
+                    foreach ($categorias as $c) {
+                        if ($c['id'] == $categoria_id) {
+                            $titulo_header = $c['nombre'];
+                            break;
+                        }
+                    }
+                }
+                echo $titulo_header;
+                ?>
+                <span class="text-muted ms-2"
+                    style="font-size: 0.9em; font-weight: 500; color: #666;"><?php echo $total_productos; ?></span>
+            </h5>
         </div>
     </div>
 
@@ -501,7 +540,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                         <div class="product-card-figma" style="margin-bottom: 1rem;">
                             <div class="img-placeholder" style="border-radius: 12px; margin-bottom: 0.5rem;">
                                 <!-- Discount -->
-                                <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                     <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
                                     <span class="discount-tag"
                                         style="top:5px; left:5px; font-size:0.6rem;">-<?php echo $descuento; ?>%</span>
@@ -521,9 +560,12 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                             </h6>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <?php if ($prod['precio_oferta']): ?>
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
                                         <div style="font-size: 0.8rem; font-weight:700;">
-                                            $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                                            $<?php echo number_format($prod['precio_oferta'], 2); ?>
+                                            <span class="text-muted text-decoration-line-through ms-1"
+                                                style="font-size: 0.7rem;">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                        </div>
                                     <?php else: ?>
                                         <div style="font-size: 0.8rem; font-weight:700;">
                                             $<?php echo number_format($prod['precio_venta'], 2); ?></div>
@@ -538,7 +580,25 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div style="height: 80px;"></div>
+            <div style="height: 40px;"></div>
+            <?php if ($total_productos > $limit_actual): ?>
+                <div class="text-center mb-5 pb-5">
+                    <?php $mostrando = min($limit_actual, $total_productos); ?>
+                    <p class="text-muted mb-3 small">Mostrando <?php echo $mostrando; ?> de <?php echo $total_productos; ?>
+                        productos</p>
+
+                    <?php
+                    // Construir URL para cargar más
+                    $params = $_GET;
+                    $params['ver_hasta'] = $limit_actual + 50;
+                    $new_query_string = http_build_query($params);
+                    ?>
+                    <a href="?<?php echo $new_query_string; ?>" class="btn btn-outline-success rounded-pill px-4">
+                        Cargar más productos
+                    </a>
+                </div>
+            <?php endif; ?>
+            <div style="height: 40px;"></div>
         <?php endif; ?>
     </div>
 </div>
@@ -574,11 +634,16 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
         <div class="col-md-4 d-flex justify-content-end gap-2">
             <a href="tienda.php?filter=temporada"
                 class="btn-filter-special btn-season <?php echo ($filtro_especial === 'temporada') ? 'active' : ''; ?>">
-                <i class="fas fa-sun"></i> Temporada
+                <i class="fas fa-sun"></i> <?php echo htmlspecialchars($nombre_temporada); ?>
             </a>
             <a href="tienda.php?filter=mejores"
                 class="btn-filter-special btn-best <?php echo ($filtro_especial === 'mejores') ? 'active' : ''; ?>">
                 <i class="fas fa-star"></i> Mejores
+            </a>
+            <a href="tienda.php?filter=promocion"
+                class="btn-filter-special btn-danger <?php echo ($filtro_especial === 'promocion') ? 'active' : 'text-danger bg-white border-danger'; ?> rounded-pill"
+                style="border: 2px solid #dc3545;">
+                <i class="fas fa-tag"></i> Promociones
             </a>
             <?php if ($filtro_especial): ?>
                 <a href="tienda.php" class="btn btn-outline-secondary rounded-pill d-flex align-items-center"
@@ -595,7 +660,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="product-card-figma">
                         <div class="img-placeholder">
-                            <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                            <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
                                 <span class="discount-tag">-<?php echo $descuento; ?>%</span>
                             <?php endif; ?>
@@ -619,7 +684,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <?php if ($prod['precio_oferta']): ?>
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
                                     <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                     <span class="prod-price">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
                                 <?php else: ?>

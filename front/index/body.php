@@ -13,6 +13,16 @@ try {
     $categorias = []; // Fallback vacío si hay error
 }
 
+// Obtener Configuración (Temporada)
+try {
+    $stmt_config = $pdo->query("SELECT clave, valor FROM configuracion");
+    $configuracion = $stmt_config->fetchAll(PDO::FETCH_KEY_PAIR);
+    $nombre_temporada = $configuracion['nombre_temporada'] ?? 'Temporada';
+} catch (PDOException $e) {
+    $nombre_temporada = 'Temporada';
+    $configuracion = [];
+}
+
 // B) Obtener Productos "Top" (Lo Mejor de Roots) - Ahora filtrado por flag "es_mejor"
 // Criterio: Productos activos que tienen es_mejor = 1
 try {
@@ -176,7 +186,7 @@ try {
     /* Mobile text adjustments */
     @media (max-width: 991px) {
         .section-padding {
-            padding: 2.5rem 0;
+            padding: 2.5rem 1.5rem;
         }
 
         .section-title {
@@ -674,102 +684,111 @@ try {
 
 <!-- ================= SEASONAL PRODUCTS (New) ================= -->
 <?php if (!empty($productos_temporada)): ?>
-<div class="container section-padding pb-0">
-    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-        <h2 class="section-title m-0">De Temporada</h2>
-    </div>
+    <div class="container section-padding pb-0">
 
-    <!-- Mobile Carousel -->
-    <div class="position-relative d-lg-none">
-        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileSeasonal', -1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="horizontal-snap-slider" id="mobileSeasonal">
-            <?php foreach ($productos_temporada as $prod): ?>
-                <div class="snap-item">
-                    <div class="mobile-promo-card">
-                        <div class="mobile-promo-img-container">
-                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                 <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                             <?php endif; ?>
+        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+            <h2 class="section-title m-0">Productos de <?php echo htmlspecialchars($nombre_temporada); ?></h2>
+        </div>
 
-                            <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
-                                <?php if (!empty($prod['imagen_principal'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                        alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                <?php else: ?>
-                                    <img src="front/multimedia/productos/default.png" alt="Producto">
+
+
+        <!-- Mobile Carousel -->
+        <div class="position-relative d-lg-none">
+            <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileSeasonal', -1)" type="button"
+                style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="horizontal-snap-slider" id="mobileSeasonal">
+                <?php foreach ($productos_temporada as $prod): ?>
+                    <div class="snap-item">
+                        <div class="mobile-promo-card">
+                            <div class="mobile-promo-img-container">
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
                                 <?php endif; ?>
-                            </a>
 
-                            <button class="mobile-promo-add" onclick="addToCart(
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                    class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
+                                    <?php if (!empty($prod['imagen_principal'])): ?>
+                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                    <?php else: ?>
+                                        <img src="front/multimedia/productos/default.png" alt="Producto">
+                                    <?php endif; ?>
+                                </a>
+
+                                <button class="mobile-promo-add" onclick="addToCart(
                                 <?php echo $prod['id']; ?>,
                                 '<?php echo htmlspecialchars($prod['nombre']); ?>',
                                 <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
                                 '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
                             )"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <h5 class="fw-bold mb-1 fs-6 text-truncate">
-                            <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
-                                <?php echo htmlspecialchars($prod['nombre']); ?>
-                            </a>
-                        </h5>
-                        <div class="d-flex align-items-center">
-                            <?php if ($prod['precio_oferta']): ?>
-                                <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                            <?php else: ?>
-                                <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileSeasonal', 1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-
-    <!-- Desktop Grid (Simple row for seasonals) -->
-    <div class="d-none d-lg-block">
-        <div class="row g-4">
-             <?php foreach (array_slice($productos_temporada, 0, 4) as $prod): ?>
-                <div class="col-md-3">
-                    <div class="product-card-minimal">
-                        <div class="product-placeholder">
-                             <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                 <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                 <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                             <?php endif; ?>
-                            <a href="producto.php?id=<?php echo $prod['id']; ?>" class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                <?php if (!empty($prod['imagen_principal'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>" alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                            </div>
+                            <h5 class="fw-bold mb-1 fs-6 text-truncate">
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
+                                    <?php echo htmlspecialchars($prod['nombre']); ?>
+                                </a>
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
+                                    <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                    <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php else: ?>
-                                    <img src="front/multimedia/productos/default.png" alt="Producto">
+                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php endif; ?>
-                            </a>
-                             <!-- Hover Add Button could go here -->
-                        </div>
-                        <h5 class="fw-bold mt-3 mb-1"><a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark"><?php echo htmlspecialchars($prod['nombre']); ?></a></h5>
-                        <div class="d-flex align-items-center gap-2">
-                             <?php if ($prod['precio_oferta']): ?>
-                                <span class="fw-bold text-success">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                <span class="text-muted text-decoration-line-through small">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                            <?php else: ?>
-                                <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                </div>
-             <?php endforeach; ?>
+                <?php endforeach; ?>
+            </div>
+            <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileSeasonal', 1)" type="button"
+                style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Desktop Grid (Simple row for seasonals) -->
+        <div class="d-none d-lg-block">
+            <div class="row g-4">
+                <?php foreach (array_slice($productos_temporada, 0, 4) as $prod): ?>
+                    <div class="col-md-3">
+                        <div class="product-card-minimal">
+                            <div class="product-placeholder">
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                                <?php endif; ?>
+                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                    class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <?php if (!empty($prod['imagen_principal'])): ?>
+                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                    <?php else: ?>
+                                        <img src="front/multimedia/productos/default.png" alt="Producto">
+                                    <?php endif; ?>
+                                </a>
+                                <!-- Hover Add Button could go here -->
+                            </div>
+                            <h5 class="fw-bold mt-3 mb-1"><a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                    class="text-decoration-none text-dark"><?php echo htmlspecialchars($prod['nombre']); ?></a>
+                            </h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
+                                    <span
+                                        class="fw-bold text-success">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                    <span
+                                        class="text-muted text-decoration-line-through small">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                <?php else: ?>
+                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
-</div>
 <?php endif; ?>
 <div class="container section-padding" style="background-color: #fff;">
     <!-- Mobile Requirement: Green background for specific section? User said "Contenedor con fondo verde suave" for Novedades. Actually let's wrap just this section for mobile in green or global? "Contenedor con fondo verde suave" -->
@@ -792,7 +811,7 @@ try {
                         <div class="snap-item">
                             <div class="mobile-promo-card">
                                 <div class="mobile-promo-img-container">
-                                    <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                         <?php
                                         $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100);
                                         ?>
@@ -822,7 +841,7 @@ try {
                                     </a>
                                 </h5>
                                 <div class="d-flex align-items-center">
-                                    <?php if ($prod['precio_oferta']): ?>
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
                                         <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
                                         <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                     <?php else: ?>
@@ -857,7 +876,7 @@ try {
         <div class="row g-4">
             <div class="col-md-4">
                 <a href="tienda.php?cat=temporada" class="gray-card card-tall"
-                    style="background-image: url('front/multimedia/d1.png'); position: relative;">
+                    style="background-image: url('<?php echo htmlspecialchars(ltrim($configuracion['imagen_temporada'] ?? 'front/multimedia/d1.png', '/')); ?>'); position: relative; background-size: cover; background-position: center;">
                     <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase"
                         style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Temporada</span>
                 </a>
@@ -915,7 +934,7 @@ try {
                     <div class="snap-item">
                         <div class="mobile-promo-card"> <!-- Reusing promo card style for consistency -->
                             <div class="mobile-promo-img-container">
-                                <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                     <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
                                     <span class="discount-badge">-<?php echo $descuento; ?>%</span>
                                 <?php endif; ?>
@@ -943,7 +962,7 @@ try {
                                 </a>
                             </h5>
                             <div class="d-flex align-items-center">
-                                <?php if ($prod['precio_oferta']): ?>
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
                                     <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
                                     <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php else: ?>
@@ -970,7 +989,7 @@ try {
                 <div class="col-md-3">
                     <div class="product-card-minimal">
                         <div class="product-placeholder">
-                            <?php if ($prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                            <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
                                 <?php
                                 $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100);
                                 ?>
@@ -994,7 +1013,7 @@ try {
                         </h5>
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <div>
-                                <?php if ($prod['precio_oferta']): ?>
+                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
                                     <span
                                         class="text-muted text-decoration-line-through small me-1">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                     <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
@@ -1120,7 +1139,8 @@ try {
 
     <div class="row align-items-end mb-4 mb-lg-5">
         <div class="col-md-7">
-            <h2 class="section-title mb-3" style="font-size: 1.5rem; letter-spacing: 0.5px;">HAZ QUE TU COMPRA CUENTE
+            <h2 class="section-title mb-3" style="font-size: 1.5rem; letter-spacing: 0.5px;">HAZ QUE TU COMPRA
+                CUENTE
             </h2>
             <p class="section-desc mb-0 d-none d-lg-block">
                 En Roots, cada compra tiene un propósito.<br>
@@ -1137,9 +1157,9 @@ try {
     </div>
 
     <!-- MOBILE IMPACT SLIDER (Horizontal) -->
-    <div class="position-relative d-lg-none">
+    <div class="position-relative d-lg-none" style="margin-left: 1rem; margin-right: 1rem;">
         <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileImpact', -1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
+            style="width: 30px; height: 30px; font-size: 0.8rem; left: -15px;">
             <i class="fas fa-chevron-left"></i>
         </button>
         <div class="d-flex" id="mobileImpact"
@@ -1170,7 +1190,7 @@ try {
             </a>
         </div>
         <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileImpact', 1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
+            style="width: 30px; height: 30px; font-size: 0.8rem; right: -15px;">
             <i class="fas fa-chevron-right"></i>
         </button>
     </div>
@@ -1182,7 +1202,8 @@ try {
                 <div class="impact-card"
                     style="background-image: url('front/multimedia/r1.png'); background-size: cover;">
                 </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes</p>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes
+                </p>
             </a>
         </div>
         <div class="col-md-4">
@@ -1190,7 +1211,8 @@ try {
                 <div class="impact-card"
                     style="background-image: url('front/multimedia/r2.png'); background-size: cover;">
                 </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura</p>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura
+                </p>
             </a>
         </div>
         <div class="col-md-4">
@@ -1198,7 +1220,8 @@ try {
                 <div class="impact-card"
                     style="background-image: url('front/multimedia/r3.png'); background-size: cover;">
                 </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local</p>
+                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local
+                </p>
             </a>
         </div>
     </div>

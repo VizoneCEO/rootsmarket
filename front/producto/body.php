@@ -582,8 +582,10 @@ if (!$producto) {
 
         <div class="m-price-row">
             <div class="m-price">
-                <?php if ($producto['precio_oferta']): ?>
+                <?php if (($producto['es_promocion'] ?? 0) == 1 && $producto['precio_oferta'] > 0): ?>
                     $<?php echo number_format($producto['precio_oferta'], 2); ?>
+                    <span class="text-muted text-decoration-line-through ms-2"
+                        style="font-size: 1rem; color: #999 !important;">$<?php echo number_format($producto['precio_venta'], 2); ?></span>
                 <?php else: ?>
                     $<?php echo number_format($producto['precio_venta'], 2); ?>
                 <?php endif; ?>
@@ -734,7 +736,7 @@ if (!$producto) {
             </div>
 
             <div class="product-price">
-                <?php if ($producto['precio_oferta']): ?>
+                <?php if (($producto['es_promocion'] ?? 0) == 1 && $producto['precio_oferta'] > 0): ?>
                     <span
                         class="text-decoration-line-through text-muted fs-5 me-2">$<?php echo number_format($producto['precio_venta'], 2); ?></span>
                     $<?php echo number_format($producto['precio_oferta'], 2); ?>

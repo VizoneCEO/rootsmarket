@@ -43,9 +43,9 @@ if (isset($_GET['action'])) {
 
                     $sql_producto = "INSERT INTO productos (
                         catalogo_id, nombre, sku, descripcion_corta, descripcion_larga, precio_compra, precio_venta, precio_oferta, origen,
-                        es_organico, es_vegano, es_vegetariano, es_sin_gluten, porcion_info, calorias, proteinas_g, carbohidratos_g, grasas_g, azucares_g, fibra_g, sodio_mg,
+                        es_organico, es_vegano, es_vegetariano, es_sin_gluten, tiene_azucar, es_promocion, porcion_info, calorias, proteinas_g, carbohidratos_g, grasas_g, azucares_g, fibra_g, sodio_mg,
                         calificacion, estatus
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     $stmt_producto = $pdo->prepare($sql_producto);
                     $stmt_producto->execute([
@@ -62,6 +62,8 @@ if (isset($_GET['action'])) {
                         isset($_POST['es_vegano']) ? 1 : 0,
                         isset($_POST['es_vegetariano']) ? 1 : 0,
                         isset($_POST['es_sin_gluten']) ? 1 : 0,
+                        isset($_POST['tiene_azucar']) ? 1 : 0,
+                        isset($_POST['es_promocion']) ? 1 : 0,
                         empty(trim($_POST['porcion_info'])) ? null : trim($_POST['porcion_info']),
                         empty($_POST['calorias']) ? null : $_POST['calorias'],
                         empty($_POST['proteinas_g']) ? null : $_POST['proteinas_g'],
@@ -120,7 +122,7 @@ if (isset($_GET['action'])) {
                     $sql_update = "UPDATE productos SET
                         catalogo_id = ?, nombre = ?, sku = ?, descripcion_corta = ?, descripcion_larga = ?,
                         precio_compra = ?, precio_venta = ?, precio_oferta = ?, origen = ?,
-                        es_organico = ?, es_vegano = ?, es_vegetariano = ?, es_sin_gluten = ?,
+                        es_organico = ?, es_vegano = ?, es_vegetariano = ?, es_sin_gluten = ?, tiene_azucar = ?, es_promocion = ?,
                         porcion_info = ?, calorias = ?, proteinas_g = ?, carbohidratos_g = ?, grasas_g = ?, azucares_g = ?, fibra_g = ?, sodio_mg = ?,
                         calificacion = ?, estatus = ?
                     WHERE id = ?";
@@ -140,6 +142,8 @@ if (isset($_GET['action'])) {
                         isset($_POST['es_vegano']) ? 1 : 0,
                         isset($_POST['es_vegetariano']) ? 1 : 0,
                         isset($_POST['es_sin_gluten']) ? 1 : 0,
+                        isset($_POST['tiene_azucar']) ? 1 : 0,
+                        isset($_POST['es_promocion']) ? 1 : 0,
                         empty(trim($_POST['porcion_info'])) ? null : trim($_POST['porcion_info']),
                         empty($_POST['calorias']) ? null : $_POST['calorias'],
                         empty($_POST['proteinas_g']) ? null : $_POST['proteinas_g'],
@@ -205,7 +209,7 @@ if (isset($_GET['action'])) {
                     $value = $input['value'] ?? null;
 
                     // Lista blanca de campos permitidos para seguridad
-                    $allowedFields = ['es_temporada', 'es_mejor'];
+                    $allowedFields = ['es_temporada', 'es_mejor', 'es_promocion'];
 
                     if ($prodId && in_array($field, $allowedFields) && isset($value)) {
                         try {
