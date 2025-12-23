@@ -503,52 +503,115 @@ try {
         background-color: #3d8b31;
     }
 
-    /* --- CARD MOBILE NOVEDADES (Vertical Card Style) --- */
+    /* --- CARD MOBILE NOVEDADES (Updated Design) --- */
     .mobile-promo-card {
         background: white;
-        padding: 0;
+        padding: 10px;
         border-radius: 15px;
-        /* width: 100%; taken by flex item */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        /* Soft shadow */
         position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
     .mobile-promo-img-container {
-        height: 250px;
-        background-color: #f9f9f9;
-        border-radius: 15px;
+        height: 180px;
+        /* Reduced height for balance */
+        background-color: transparent;
+        border-radius: 12px;
+        /* Slightly less rounded inner */
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         position: relative;
     }
 
     .mobile-promo-img-container img {
-        max-width: 80%;
-        max-height: 80%;
+        max-width: 90%;
+        max-height: 90%;
         mix-blend-mode: multiply;
+        object-fit: contain;
     }
 
-    .mobile-promo-add {
+    /* Red Badge similar to Figma */
+    .discount-badge-mobile {
         position: absolute;
-        bottom: 10px;
+        top: 10px;
         right: 10px;
-        background: #4EAE3E;
+        /* Right aligned in Figma mockup usually, or left */
+        background-color: #ff4d4d;
+        /* Bright red */
         color: white;
-        width: 35px;
-        height: 35px;
+        padding: 4px 8px;
         border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 5;
+    }
+
+    /* Green Add Button - Bottom Right of Info Area */
+    .add-btn-mobile {
+        background: #D9F2D5;
+        /* Light green bg */
+        color: #4EAE3E;
+        /* Dark green icon */
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        /* Rounded square */
         display: flex;
         align-items: center;
         justify-content: center;
         border: none;
+        transition: all 0.2s;
+        font-size: 1.1rem;
     }
 
-    .old-price {
+    .add-btn-mobile:active {
+        transform: scale(0.95);
+        background: #c3eec0;
+    }
+
+    .promo-title-mobile {
+        font-weight: 800;
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 4px;
+        line-height: 1.2;
+        /* Truncate to 2 lines */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .promo-unit-mobile {
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    .price-container-mobile {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .current-price-mobile {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .old-price-mobile {
         text-decoration: line-through;
-        color: #D32F2F;
+        color: #ff4d4d;
         font-size: 0.9rem;
-        margin-left: 5px;
+        font-weight: 500;
+        opacity: 0.8;
     }
 </style>
 
@@ -812,10 +875,8 @@ try {
                             <div class="mobile-promo-card">
                                 <div class="mobile-promo-img-container">
                                     <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                        <?php
-                                        $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100);
-                                        ?>
-                                        <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                        <span class="discount-badge-mobile"><?php echo $descuento; ?>%</span>
                                     <?php endif; ?>
 
                                     <a href="producto.php?id=<?php echo $prod['id']; ?>"
@@ -827,26 +888,40 @@ try {
                                             <img src="front/multimedia/productos/default.png" alt="Producto">
                                         <?php endif; ?>
                                     </a>
-
-                                    <button class="mobile-promo-add" onclick="addToCart(
-                                        <?php echo $prod['id']; ?>,
-                                        '<?php echo htmlspecialchars($prod['nombre']); ?>',
-                                        <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
-                                        '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
-                                    )"><i class="fas fa-plus"></i></button>
                                 </div>
-                                <h5 class="fw-bold mb-1 fs-6 text-truncate">
-                                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
-                                        <?php echo htmlspecialchars($prod['nombre']); ?>
-                                    </a>
-                                </h5>
-                                <div class="d-flex align-items-center">
-                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                        <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                        <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                    <?php else: ?>
-                                        <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                    <?php endif; ?>
+
+                                <div class="d-flex flex-column flex-grow-1 justify-content-between">
+                                    <div>
+                                        <h5 class="promo-title-mobile">
+                                            <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                                                class="text-decoration-none text-dark">
+                                                <?php echo htmlspecialchars($prod['nombre']); ?>
+                                            </a>
+                                        </h5>
+                                        <p class="promo-unit-mobile">1 pieza</p>
+                                        <!-- Placeholder unit, or add dynamic unit if available -->
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-end mt-2">
+                                        <div class="price-container-mobile">
+                                            <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
+                                                <span
+                                                    class="current-price-mobile">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                                <span
+                                                    class="old-price-mobile">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                            <?php else: ?>
+                                                <span
+                                                    class="current-price-mobile">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button class="add-btn-mobile" onclick="addToCart(
+                                            <?php echo $prod['id']; ?>,
+                                            '<?php echo htmlspecialchars($prod['nombre']); ?>',
+                                            <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
+                                            '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
+                                        )"><i class="fas fa-plus"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -3,26 +3,66 @@
 // Ajustar ruta si es necesario, asumiendo estructura estándar
 require_once dirname(__DIR__, 2) . '/back/conection/db.php';
 
-// --- CONSULTA DE DATOS REALES ---
+// --- CONSULTA DE DATOS ---
 try {
-    // Obtener todos los productos
-    $stmt = $pdo->query("SELECT id, nombre, stock, stock_minimo FROM productos ORDER BY nombre ASC");
-    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 1. Obtener Catálogos para el filtro
+    $stmt_cats = $pdo->query("SELECT id, nombre FROM catalogos WHERE estatus = 'activo' ORDER BY nombre ASC");
+    $catalogos = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
 
-    // Calcular KPIs
+    // 2. Preparar Filtros
+    $search_query = isset($_GET['q']) ? trim($_GET['q']) : '';
+    $filter_type = isset($_GET['filter']) ? trim($_GET['filter']) : '';
+
+    $conditions = [];
+    $params = [];
+
+    // Filtro de Búsqueda
+    if (!empty($search_query)) {
+        $conditions[] = "(nombre LIKE ? OR sku LIKE ?)";
+        $params[] = "%$search_query%";
+        $params[] = "%$search_query%";
+    }
+
+    // Filtro por Tipo/Categoría
+    if ($filter_type === 'temporada') {
+        $conditions[] = "es_temporada = 1";
+    } elseif ($filter_type === 'mejores') {
+        $conditions[] = "es_mejor = 1";
+    } elseif ($filter_type === 'promocion') {
+        $conditions[] = "es_promocion = 1";
+    } elseif (strpos($filter_type, 'cat_') === 0) {
+        $cat_id = (int) substr($filter_type, 4);
+        $conditions[] = "catalogo_id = $cat_id";
+    }
+
+    $where_clause = "";
+    if (!empty($conditions)) {
+        $where_clause = " WHERE " . implode(" AND ", $conditions);
+    }
+
+    // 3. Obtener Productos Filtrados
+    // Nota: Mantenemos el conteo global de KPIs separado o filtramos?
+    // Generalmente los KPIs de "Sin Stock" deben ser globales para alertar, 
+    // pero la tabla muestra lo filtrado.
+
+    // KPIs Globales (Sin filtros)
+    $stmt_kpi = $pdo->query("SELECT stock, stock_minimo FROM productos");
+    $all_products = $stmt_kpi->fetchAll(PDO::FETCH_ASSOC);
+
     $productosSinStock = 0;
     $productosConStockBajo = 0;
-
-    foreach ($productos as $producto) {
-        $stock = (int) $producto['stock'];
-        $minStock = (int) $producto['stock_minimo'];
-
-        if ($stock == 0) {
+    foreach ($all_products as $p) {
+        if ($p['stock'] == 0)
             $productosSinStock++;
-        } elseif ($stock <= $minStock) {
+        elseif ($p['stock'] <= $p['stock_minimo'])
             $productosConStockBajo++;
-        }
     }
+
+    // Productos para la Tabla (Filtrados)
+    $sql_products = "SELECT id, nombre, stock, stock_minimo FROM productos $where_clause ORDER BY nombre ASC";
+    $stmt = $pdo->prepare($sql_products);
+    $stmt->execute($params);
+    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     echo "Error BD: " . $e->getMessage();
@@ -63,8 +103,34 @@ function getStatusBadge($stock, $minStock)
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-white">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="mb-0">Inventario General</h5>
+            <form class="d-flex" action="" method="GET">
+                <input type="hidden" name="page" value="stock">
+
+                <select class="form-select me-2" name="filter" style="width: auto;">
+                    <option value="">Todos</option>
+                    <option value="temporada" <?php echo ($filter_type === 'temporada') ? 'selected' : ''; ?>>De Temporada
+                    </option>
+                    <option value="mejores" <?php echo ($filter_type === 'mejores') ? 'selected' : ''; ?>>Mejores</option>
+                    <option value="promocion" <?php echo ($filter_type === 'promocion') ? 'selected' : ''; ?>>En Promoción
+                    </option>
+                    <option disabled>--- Por Categoría ---</option>
+                    <?php foreach ($catalogos as $cat): ?>
+                        <option value="cat_<?php echo $cat['id']; ?>" <?php echo ($filter_type === 'cat_' . $cat['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($cat['nombre']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <input class="form-control me-2" type="search" name="q" placeholder="Buscar..." aria-label="Buscar"
+                    value="<?php echo htmlspecialchars($search_query); ?>">
+                <button class="btn btn-outline-success" type="submit"><i class="fas fa-search"></i></button>
+                <?php if (!empty($search_query) || !empty($filter_type)): ?>
+                    <a href="?page=stock" class="btn btn-outline-secondary ms-2" title="Limpiar"><i
+                            class="fas fa-times"></i></a>
+                <?php endif; ?>
+            </form>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -85,7 +151,8 @@ function getStatusBadge($stock, $minStock)
                                 <td><?php echo htmlspecialchars($producto['nombre']); ?></td>
                                 <td class="text-center fw-bold"><?php echo $producto['stock']; ?></td>
                                 <td class="text-center">
-                                    <?php echo getStatusBadge($producto['stock'], $producto['stock_minimo']); ?></td>
+                                    <?php echo getStatusBadge($producto['stock'], $producto['stock_minimo']); ?>
+                                </td>
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
                                         data-bs-target="#ingresoModal" data-product-id="<?php echo $producto['id']; ?>"

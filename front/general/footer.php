@@ -203,7 +203,11 @@
             <div class="col-12 col-md-3 mb-4">
                 <h5 class="footer-col-title">SÍGUENOS</h5>
                 <div>
-                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.instagram.com/rootsmarket.mx/" target="_blank" class="social-icon"><i
+                            class="fab fa-instagram"></i></a>
+                    <!-- TikTok Icon -->
+                    <a href="https://www.tiktok.com/@rootsmarket.mx" target="_blank" class="social-icon"><i
+                            class="fab fa-tiktok"></i></a>
                 </div>
             </div>
         </div>

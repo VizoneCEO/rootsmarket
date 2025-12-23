@@ -20,11 +20,14 @@ try {
 
 <style>
     /* --- ESTILOS CARRITO FIGMA (COLORS) --- */
-    body { background-color: #ffffff; }
+    body {
+        background-color: #ffffff;
+    }
 
     /* Encabezados VERDES */
     .cart-header-row {
-        background-color: #599332; /* Verde Roots */
+        background-color: #599332;
+        /* Verde Roots */
         color: white;
         border-radius: 8px 8px 0 0;
         padding: 15px;
@@ -35,7 +38,8 @@ try {
     }
 
     .summary-header {
-        background-color: #599332; /* Verde Roots */
+        background-color: #599332;
+        /* Verde Roots */
         color: white;
         padding: 15px;
         border-radius: 8px 8px 0 0;
@@ -52,7 +56,10 @@ try {
         align-items: center;
         background-color: #fff;
     }
-    .cart-item-row:last-child { border-bottom: none; }
+
+    .cart-item-row:last-child {
+        border-bottom: none;
+    }
 
     /* Imagen pequeña */
     .cart-img-box {
@@ -67,6 +74,7 @@ try {
         justify-content: center;
         overflow: hidden;
     }
+
     .cart-img-box img {
         width: 100%;
         height: 100%;
@@ -83,7 +91,10 @@ try {
         margin-right: 15px;
         transition: color 0.2s;
     }
-    .btn-remove:hover { color: #dc3545; }
+
+    .btn-remove:hover {
+        color: #dc3545;
+    }
 
     /* Selector de Cantidad */
     .qty-selector-sm {
@@ -94,27 +105,62 @@ try {
         padding: 2px 8px;
         background: #fff;
     }
-    .qty-btn-sm { border: none; background: none; cursor: pointer; font-weight: bold; color: #555; padding: 0 8px; }
-    .qty-val-sm { width: 30px; text-align: center; border: none; outline: none; font-size: 0.9rem; color: #333; }
+
+    .qty-btn-sm {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: bold;
+        color: #555;
+        padding: 0 8px;
+    }
+
+    .qty-val-sm {
+        width: 30px;
+        text-align: center;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        color: #333;
+    }
 
     /* Caja de Resumen */
     .summary-box {
-        border: 1px solid #eee; /* Borde sutil */
+        border: 1px solid #eee;
+        /* Borde sutil */
         border-radius: 8px;
-        background-color: #f9f9f9; /* Fondo muy ligero para el cuerpo */
+        background-color: #f9f9f9;
+        /* Fondo muy ligero para el cuerpo */
     }
-    .summary-body { padding: 25px; }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: #555; font-weight: 500; }
+
+    .summary-body {
+        padding: 25px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: #555;
+        font-weight: 500;
+    }
 
     .summary-total {
-        display: flex; justify-content: space-between; margin-top: 20px;
-        border-top: 1px solid #ddd; pt-3;
-        font-weight: 700; color: #333; font-size: 1.1rem;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        border-top: 1px solid #ddd;
+        pt-3;
+        font-weight: 700;
+        color: #333;
+        font-size: 1.1rem;
     }
 
     /* Botón Checkout NARANJA */
     .btn-checkout-orange {
-        background-color: #E67E22; /* Naranja Figma */
+        background-color: #E67E22;
+        /* Naranja Figma */
         color: white;
         width: 100%;
         padding: 14px;
@@ -126,7 +172,11 @@ try {
         text-transform: uppercase;
         font-size: 0.9rem;
     }
-    .btn-checkout-orange:hover { background-color: #D35400; color: white; }
+
+    .btn-checkout-orange:hover {
+        background-color: #D35400;
+        color: white;
+    }
 
     /* Botón Vaciar Carrito */
     .btn-empty-cart {
@@ -138,20 +188,46 @@ try {
         cursor: pointer;
         transition: opacity 0.2s;
     }
-    .btn-empty-cart:hover { opacity: 0.7; text-decoration: underline; }
+
+    .btn-empty-cart:hover {
+        opacity: 0.7;
+        text-decoration: underline;
+    }
 
     /* --- Estilos Recomendados --- */
     .similar-title {
-        font-weight: 700; margin-bottom: 2rem; color: #333; font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #333;
+        font-size: 1.5rem;
         text-transform: uppercase;
     }
-    .product-card-minimal { border: none; background: transparent; }
-    .product-placeholder {
-        background-color: #FFFFFF; border: 1px solid #e0e0e0; border-radius: 15px;
-        height: 250px; width: 100%; position: relative; margin-bottom: 15px;
-        display: flex; align-items: center; justify-content: center; overflow: hidden;
+
+    .product-card-minimal {
+        border: none;
+        background: transparent;
     }
-    .product-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 20px; }
+
+    .product-placeholder {
+        background-color: #FFFFFF;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+        height: 250px;
+        width: 100%;
+        position: relative;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .product-placeholder img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 20px;
+    }
 
     /* --- AJUSTES MÓVILES --- */
     @media (max-width: 768px) {
@@ -159,7 +235,11 @@ try {
             grid-template-columns: auto 60px 1fr;
             align-items: start;
         }
-        .mobile-price { font-weight: bold; font-size: 1.1rem; }
+
+        .mobile-price {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
     }
 </style>
 
@@ -169,7 +249,8 @@ try {
         <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
         <h3 class="fw-bold text-muted">Tu carrito está vacío</h3>
         <p class="text-muted mb-4">¡Llena tu despensa con los mejores productos orgánicos!</p>
-        <a href="tienda.php" class="btn rounded-pill px-4 py-2 text-white fw-bold" style="background-color: #599332;">Ir a la tienda</a>
+        <a href="tienda.php" class="btn rounded-pill px-4 py-2 text-white fw-bold" style="background-color: #599332;">Ir
+            a la tienda</a>
     </div>
 
     <div class="row" id="cart-content-wrapper">
@@ -191,7 +272,7 @@ try {
             </div>
 
             <div id="cart-items-list" style="border: 1px solid #eee; border-top: none; border-radius: 0 0 8px 8px;">
-                </div>
+            </div>
         </div>
 
         <div class="col-lg-4 mt-4 mt-lg-0">
@@ -212,7 +293,8 @@ try {
                         <span id="summary-total">$0.00</span>
                     </div>
 
-                    <button class="btn-checkout-orange" onclick="window.location.href='checkout.php'">CONTINUAR CON LA COMPRA</button>
+                    <button class="btn-checkout-orange" onclick="window.location.href='checkout.php'">CONTINUAR CON LA
+                        COMPRA</button>
                 </div>
             </div>
         </div>
@@ -222,67 +304,81 @@ try {
         <h3 class="similar-title mt-4">También te puede gustar</h3>
         <div class="row g-4">
             <?php foreach ($recomendados as $rec): ?>
-            <div class="col-6 col-md-3">
-                <div class="product-card-minimal">
-                    <div class="product-placeholder">
-                        <?php if ($rec['precio_oferta'] > 0 && $rec['precio_oferta'] < $rec['precio_venta']): ?>
-                            <?php $desc = round((($rec['precio_venta'] - $rec['precio_oferta']) / $rec['precio_venta']) * 100); ?>
-                            <span class="badge bg-dark position-absolute top-0 start-0 m-3 rounded-pill" style="font-size: 0.75rem;">-<?php echo $desc; ?>%</span>
-                        <?php endif; ?>
-
-                        <a href="producto.php?id=<?php echo $rec['id']; ?>">
-                            <img src="<?php echo htmlspecialchars(ltrim($rec['imagen_principal'], '/')); ?>" alt="<?php echo htmlspecialchars($rec['nombre']); ?>">
-                        </a>
-                    </div>
-                    <h6 class="fw-bold text-truncate mb-1 text-dark"><?php echo htmlspecialchars($rec['nombre']); ?></h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <?php if ($rec['precio_oferta']): ?>
-                                <small class="text-muted text-decoration-line-through me-1">$<?php echo number_format($rec['precio_venta'], 2); ?></small>
-                                <span class="fw-bold text-dark">$<?php echo number_format($rec['precio_oferta'], 2); ?></span>
+                <div class="col-6 col-md-3">
+                    <div class="product-card-minimal">
+                        <div class="product-placeholder">
+                            <?php if ($rec['precio_oferta'] > 0 && $rec['precio_oferta'] < $rec['precio_venta']): ?>
+                                <?php $desc = round((($rec['precio_venta'] - $rec['precio_oferta']) / $rec['precio_venta']) * 100); ?>
+                                <span class="badge bg-dark position-absolute top-0 start-0 m-3 rounded-pill"
+                                    style="font-size: 0.75rem;">-<?php echo $desc; ?>%</span>
+                            <?php endif; ?>
+                            <?php
+                            $precio_final = $rec['precio_venta'];
+                            $tiene_promo = (($rec['es_promocion'] ?? 0) == 1 && $rec['precio_oferta'] > 0);
+                            if ($tiene_promo) {
+                                $precio_final = $rec['precio_oferta'];
+                            }
+                            $imagen_rec = htmlspecialchars(ltrim($rec['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/'));
+                            ?>
+                            <a href="producto.php?id=<?php echo $rec['id']; ?>">
+                                <img src="<?php echo $imagen_rec; ?>" alt="<?php echo htmlspecialchars($rec['nombre']); ?>">
+                            </a>
+                        </div>
+                        <h6 class="card-title text-truncate" style="font-size: 0.95rem; font-weight: 600; color: #2d4c48;">
+                            <?php echo htmlspecialchars($rec['nombre']); ?>
+                        </h6>
+                        <div class="mb-2">
+                            <?php if ($tiene_promo): ?>
+                                <span class="text-muted text-decoration-line-through me-2"
+                                    style="font-size: 0.85rem;">$<?php echo number_format($rec['precio_venta'], 2); ?></span>
+                                <span class="text-danger fw-bold">$<?php echo number_format($precio_final, 2); ?></span>
                             <?php else: ?>
-                                <span class="fw-bold text-dark">$<?php echo number_format($rec['precio_venta'], 2); ?></span>
+                                <span class="fw-bold"
+                                    style="color: #4EAE3E;">$<?php echo number_format($precio_final, 2); ?></span>
                             <?php endif; ?>
                         </div>
-                        <i class="fas fa-plus-circle fs-4 text-dark" style="cursor: pointer;" onclick="addToCart(<?php echo $rec['id']; ?>, '<?php echo htmlspecialchars($rec['nombre']); ?>', <?php echo $rec['precio_oferta'] ?: $rec['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($rec['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>')"></i>
+                        <button class="btn btn-sm w-100 rounded-pill text-white fw-bold btn-add-suggested"
+                            style="background-color: #4EAE3E;"
+                            onclick="addToCart(<?php echo $rec['id']; ?>, '<?php echo htmlspecialchars($rec['nombre']); ?>', <?php echo $precio_final; ?>, '<?php echo $imagen_rec; ?>')">
+                            Agregar +
+                        </button>
                     </div>
                 </div>
-            </div>
             <?php endforeach; ?>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    renderCartPage();
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        renderCartPage();
+    });
 
-function renderCartPage() {
-    let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
-    const listContainer = document.getElementById('cart-items-list');
-    const wrapper = document.getElementById('cart-content-wrapper');
-    const emptyMsg = document.getElementById('empty-cart-msg');
-    const subtotalEl = document.getElementById('summary-subtotal');
-    const totalEl = document.getElementById('summary-total');
+    function renderCartPage() {
+        let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
+        const listContainer = document.getElementById('cart-items-list');
+        const wrapper = document.getElementById('cart-content-wrapper');
+        const emptyMsg = document.getElementById('empty-cart-msg');
+        const subtotalEl = document.getElementById('summary-subtotal');
+        const totalEl = document.getElementById('summary-total');
 
-    if (cart.length === 0) {
-        wrapper.style.display = 'none';
-        emptyMsg.style.display = 'block';
-        return;
-    }
+        if (cart.length === 0) {
+            wrapper.style.display = 'none';
+            emptyMsg.style.display = 'block';
+            return;
+        }
 
-    wrapper.style.display = 'flex';
-    emptyMsg.style.display = 'none';
-    listContainer.innerHTML = '';
+        wrapper.style.display = 'flex';
+        emptyMsg.style.display = 'none';
+        listContainer.innerHTML = '';
 
-    let totalAmount = 0;
+        let totalAmount = 0;
 
-    cart.forEach((item) => {
-        const rowTotal = item.price * item.quantity;
-        totalAmount += rowTotal;
+        cart.forEach((item) => {
+            const rowTotal = item.price * item.quantity;
+            totalAmount += rowTotal;
 
-        const html = `
+            const html = `
             <div class="cart-item-row">
                 <div class="row w-100 align-items-center m-0 d-none d-lg-flex">
                     <div class="col-6 d-flex align-items-center ps-0">
@@ -324,38 +420,48 @@ function renderCartPage() {
                 </div>
             </div>
         `;
-        listContainer.insertAdjacentHTML('beforeend', html);
-    });
+            listContainer.insertAdjacentHTML('beforeend', html);
+        });
 
-    subtotalEl.innerText = '$' + totalAmount.toFixed(2);
-    totalEl.innerText = '$' + totalAmount.toFixed(2);
-}
+        subtotalEl.innerText = '$' + totalAmount.toFixed(2);
+        totalEl.innerText = '$' + totalAmount.toFixed(2);
+    }
 
-function updateCartQty(id, change) {
-    let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
-    const item = cart.find(i => i.id === id);
-    if (item) {
-        item.quantity += change;
-        if (item.quantity < 1) item.quantity = 1;
+    function updateCartQty(id, change) {
+        let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity < 1) item.quantity = 1;
+            localStorage.setItem('roots_cart', JSON.stringify(cart));
+            renderCartPage();
+            updateCartCounter();
+        }
+    }
+
+    function removeCartItem(id) {
+        let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
+        cart = cart.filter(i => i.id !== id);
         localStorage.setItem('roots_cart', JSON.stringify(cart));
         renderCartPage();
         updateCartCounter();
     }
-}
 
-function removeCartItem(id) {
-    let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
-    cart = cart.filter(i => i.id !== id);
-    localStorage.setItem('roots_cart', JSON.stringify(cart));
-    renderCartPage();
-    updateCartCounter();
-}
-
-function emptyCart() {
-    if (confirm("¿Estás seguro de que deseas vaciar el carrito?")) {
-        localStorage.removeItem('roots_cart');
-        renderCartPage();
-        updateCartCounter();
+    function emptyCart() {
+        if (confirm("¿Estás seguro de que deseas vaciar el carrito?")) {
+            localStorage.removeItem('roots_cart');
+            renderCartPage();
+            updateCartCounter();
+        }
     }
-}
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCartPage();
+
+        // Listen for the custom event dispatched by cart.js
+        window.addEventListener('cartUpdated', () => {
+            renderCartPage();
+        });
+    });
 </script>

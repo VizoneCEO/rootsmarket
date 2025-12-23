@@ -56,7 +56,12 @@ try {
     } elseif ($filter_type === 'promocion') {
         // Usa es_promocion OR precio_oferta > 0 if you want to be safe, but we decided to rely on es_promocion flag or create it properly.
         // Given I updated product_manager to save es_promocion, we should use it.
+    } elseif ($filter_type === 'promocion') {
         $conditions[] = "p.es_promocion = 1";
+    } elseif (strpos($filter_type, 'cat_') === 0) {
+        // Filter by specific category
+        $cat_id = (int) substr($filter_type, 4);
+        $conditions[] = "p.catalogo_id = $cat_id";
     }
 
     $where_clause = "";
@@ -162,6 +167,12 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                             <option value="temporada" <?php echo ($filter_type === 'temporada') ? 'selected' : ''; ?>>De Temporada</option>
                             <option value="mejores" <?php echo ($filter_type === 'mejores') ? 'selected' : ''; ?>>Mejores</option>
                             <option value="promocion" <?php echo ($filter_type === 'promocion') ? 'selected' : ''; ?>>En Promoción</option>
+                            <option disabled>--- Por Categoría ---</option>
+                            <?php foreach ($catalogos_activos as $cat): ?>
+                                <option value="cat_<?php echo $cat['id']; ?>" <?php echo ($filter_type === 'cat_' . $cat['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cat['nombre']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
 
                         <input class="form-control me-2" type="search" name="q" placeholder="Buscar..." aria-label="Buscar" value="<?php echo htmlspecialchars($search_query); ?>">
@@ -430,7 +441,7 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                     <div class="col-md-4"><label for="origen_prod" class="form-label">Origen</label><input type="text"
                             class="form-control" id="origen_prod" name="origen" placeholder="Ej: Michoacán, México">
                     </div>
-                    <div class="col-md-8 d-flex align-items-center pt-3">
+                    <div class="col-md-8 d-flex align-items-center pt-3 flex-wrap">
                         <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox"
                                 id="es_organico_prod" name="es_organico" value="1"><label class="form-check-label"
                                 for="es_organico_prod">Orgánico</label></div>
@@ -444,8 +455,8 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                                 id="es_sin_gluten_prod" name="es_sin_gluten" value="1"><label class="form-check-label"
                                 for="es_sin_gluten_prod">Sin Gluten</label></div>
                         <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox"
-                                id="tiene_azucar_prod" name="tiene_azucar" value="1"><label class="form-check-label"
-                                for="tiene_azucar_prod">Tiene Azúcar</label></div>
+                                id="sin_azucar_prod" name="sin_azucar" value="1"><label class="form-check-label"
+                                for="sin_azucar_prod">Sin Azúcar</label></div>
                     </div>
                 </div>
                 <h6>Información Nutricional</h6>
@@ -887,9 +898,9 @@ $activeTab = $_GET['tab'] ?? 'catalogs'; // Default tab
                 form.querySelector('[name="calificacion"]').value = producto.calificacion || '';
                 form.querySelector('[name="estatus"]').value = producto.estatus || 'borrador';
 
-                // Handle Sugar
-                const sugarCheck = form.querySelector('[name="tiene_azucar"]');
-                if(sugarCheck) sugarCheck.checked = producto.tiene_azucar == 1;
+                // Handle Sugar (INVERTED LOGIC)
+                const sugarCheck = form.querySelector('[name="sin_azucar"]');
+                if(sugarCheck) sugarCheck.checked = producto.tiene_azucar == 0;
 
                 // Handle Promotion
                 const promoCheck = form.querySelector('[name="es_promocion"]');

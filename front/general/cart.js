@@ -20,6 +20,9 @@ function addToCart(id, name, price, image, quantity = 1) {
     updateCartCounter();
     triggerCartAnimation(); // <--- AQUÍ ESTÁ LA MAGIA
 
+    // Dispatch custom event for live updates
+    window.dispatchEvent(new Event('cartUpdated'));
+
     // Opcional: Feedback en consola
     // console.log('Agregado:', name);
 }
@@ -47,7 +50,7 @@ function triggerCartAnimation() {
 
     // Función helper para añadir/quitar clase
     const animate = (el) => {
-        if(el) {
+        if (el) {
             el.classList.remove('cart-animating'); // Reiniciar si ya estaba animando
             void el.offsetWidth; // Forzar reflow (truco para reiniciar animación CSS)
             el.classList.add('cart-animating');

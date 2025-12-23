@@ -164,7 +164,7 @@
             <div class="initiative-card">
                 <div class="card-image-wrapper">
 
-                    <img src="front/multimedia/r1.png" alt="Raíces Verdes">
+                    <img src="front/multimedia/inc1.jpg" alt="Raíces Verdes">
                 </div>
                 <h4 class="card-title">Raíces Verdes</h4>
                 <p class="card-text">Tus compras ayudan a plantar árboles y regenerar el planeta.</p>
@@ -177,7 +177,7 @@
             <div class="initiative-card">
                 <div class="card-image-wrapper">
 
-                    <img src="front/multimedia/r2.png" alt="Cero Basura">
+                    <img src="front/multimedia/inc2.jpg" alt="Cero Basura">
                 </div>
                 <h4 class="card-title">Cero Basura</h4>
                 <p class="card-text">Damos nueva vida a tus empaques y reducimos los residuos juntos.</p>
@@ -190,7 +190,7 @@
             <div class="initiative-card">
                 <div class="card-image-wrapper">
 
-                    <img src="front/multimedia/r3.png" alt="Impulso Local">
+                    <img src="front/multimedia/inc3.jpg" alt="Impulso Local">
                 </div>
                 <h4 class="card-title">Impulso Local</h4>
                 <p class="card-text">Apoya a productores cercanos y consume con conciencia.</p>
