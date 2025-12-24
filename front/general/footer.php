@@ -158,21 +158,38 @@
 </style>
 
 <footer class="footer-green-section" id="contacto">
-    <div class="footer-top-strip"></div>
+    <!-- Brand Bar (Orange Strip) -->
+    <div class="section-orange py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 px-md-5">
+                <!-- Placeholders for Brands - Using Text for now as specific logos weren't provided file paths -->
+                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">SHEFINDS</span>
+                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">YAHOO!</span>
+                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">Healthline</span>
+                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">YAHOO!
+                    NEWS</span>
+                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">msn</span>
+            </div>
+        </div>
+    </div>
 
-    <div class="container footer-content">
+    <div class="container footer-content pt-5">
 
         <div class="subscribe-area">
-            <h3 class="subscribe-title">
+            <h3 class="subscribe-title mb-4">
                 Suscríbete Para Recibir<br>
                 Nuestras Promociones
             </h3>
             <div class="subscribe-form-container">
                 <form action="#">
-                    <input type="email" class="subscribe-input" placeholder="person@email.com" required>
-                    <button type="submit" class="subscribe-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <div class="d-flex position-relative">
+                        <input type="email" class="subscribe-input py-3" placeholder="person@email.com" required
+                            style="background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);">
+                        <button type="submit" class="subscribe-btn"
+                            style="background-color: #333; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

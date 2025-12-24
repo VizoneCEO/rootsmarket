@@ -86,6 +86,23 @@ try {
     $productos_temporada = [];
 }
 ?>
+<?php
+// E) Obtener Productos en Promoción
+try {
+    $stmt_promo = $pdo->prepare("
+        SELECT p.*, 
+               (SELECT imagen_url FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.orden ASC LIMIT 1) as imagen_principal 
+        FROM productos p 
+        WHERE p.estatus = 'activo' AND p.es_promocion = 1
+        ORDER BY p.id DESC 
+        LIMIT 8
+    ");
+    $stmt_promo->execute();
+    $productos_promocion = $stmt_promo->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $productos_promocion = [];
+}
+?>
 
 
 <style>
@@ -618,18 +635,26 @@ try {
 <!-- ================= HERO SECTION ================= -->
 
 <!-- Desktop Hero -->
-<div class="hero-section-desktop d-none d-lg-flex">
-    <h1 class="hero-title">Compra con Propósito</h1>
-    <p class="hero-subtitle">
-        Todo lo que necesitas para tu día a día, libre de químicos dañinos.<br>
-        Saludable, confiable y al alcance de un clic.
-    </p>
+<div class="hero-section-desktop d-none d-lg-flex position-relative">
+    <div style="z-index: 2;">
+        <h1 class="hero-title text-white">Compra con Propósito</h1>
+        <p class="hero-subtitle text-white">
+            Todo lo que necesitas para tu día a día, libre de químicos dañinos.<br>
+            Saludable, confiable y al alcance de un clic.
+        </p>
+        <a href="tienda.php" class="btn btn-primary rounded-pill px-4 py-2 mt-4 fw-bold">Empieza tu súper</a>
+    </div>
+    <!-- Overlay for better text contrast if background is light -->
+    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3); z-index: 1;">
+    </div>
 </div>
 
 <!-- Mobile Hero -->
 <div class="hero-section-mobile d-flex d-lg-none">
     <div class="hero-mobile-overlay"></div>
-    <div class="hero-title-mobile">COMPRA CON<br>PROPÓSITO</div>
+    <div class="d-flex flex-column align-items-center justify-content-center w-100" style="z-index: 2;">
+        <div class="hero-title-mobile text-white text-center" style="font-size: 1.5rem;">COMPRA CON<br>PROPÓSITO</div>
+    </div>
 
     <form class="hero-search-float d-flex align-items-center px-2" action="tienda.php" method="GET">
         <button type="submit" class="search-btn-circle" style="position:static; transform:none; color: #4EAE3E;"><i
@@ -639,18 +664,158 @@ try {
     </form>
 </div>
 
-<!-- MIS PEDIDOS QUICK ACCESS (Mobile Only) -->
+
+<!-- ================= NOVEDADES & PROMOS (BENTO GRID) ================= -->
+<style>
+    .bento-card {
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        color: white;
+        text-decoration: none;
+        display: block;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.3s;
+    }
+
+    .bento-card:hover {
+        transform: translateY(-5px);
+        color: white;
+    }
+
+    .bento-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        /* Adjust darken as needed */
+        z-index: 1;
+    }
+
+    .bento-content {
+        position: relative;
+        z-index: 2;
+        padding: 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    /* Specific Colors/Backgrounds based on image */
+    .card-season {
+        background-color: #4EAE3E;
+        /* Green */
+        /* background-image: url('path/to/season-bg.jpg'); */
+    }
+
+    .card-new {
+        background-color: #F5CBA7;
+        color: #333;
+    }
+
+    .card-campaigns {
+        background-color: #A04000;
+        /* background-image: url('path/to/campaign-bg.jpg'); */
+    }
+
+    .card-promos {
+        background-color: #D35400;
+        /* Orange/Brown */
+        /* background-image: url('path/to/promo-bg.jpg'); */
+    }
+
+    .bento-badge {
+        background-color: #F39C12;
+        /* Orange Badge */
+        color: white;
+        padding: 5px 15px;
+        border-radius: 5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .bento-title-lg {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        opacity: 0.2;
+        position: absolute;
+        top: 20%;
+        left: 10px;
+        right: 10px;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .bento-text-main {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container section-padding pt-5 d-none d-lg-block">
+    <div class="row mb-5 d-none d-lg-flex">
+        <div class="col-12 text-center">
+            <h2 class="section-title text-uppercase" style="font-size: 2rem;">Novedades y Promos de la Semana</h2>
+            <p class="section-desc">
+                Encuentra descuentos, nuevos productos y ediciones limitadas,<br>
+                todos con la garantía de estar libres de químicos dañinos.
+            </p>
+        </div>
+    </div>
+
+    <?php
+    $img_temporada = !empty($configuracion['imagen_temporada']) ? $configuracion['imagen_temporada'] : 'front/multimedia/d2.png';
+    ?>
+
+    <!-- Desktop Bento Grid -->
+    <div class="row g-4 d-none d-lg-flex" style="height: 500px;">
+
+        <!-- COL 1: TEMPORADA (Dynamic Image) -->
+        <div class="col-lg-4">
+            <a href="tienda.php?filter=temporada" class="bento-card card-season"
+                style="background-image: url('<?php echo htmlspecialchars($img_temporada); ?>');">
+            </a>
+        </div>
+
+        <!-- COL 2: STACKED (New & Campaign) -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
+            <!-- Top: Lo Nuevo (d3) -->
+            <a href="tienda.php?filter=mejores" class="bento-card card-new flex-grow-1"
+                style="background-image: url('front/multimedia/d2.png');">
+            </a>
+            <!-- Bottom: Campañas (d4) -->
+            <a href="iniciativas.php" class="bento-card card-campaigns flex-grow-1"
+                style="background-image: url('front/multimedia/d3.png');">
+            </a>
+        </div>
+
+        <!-- COL 3: PROMOS (d1 used as d5 fallback) -->
+        <div class="col-lg-4">
+            <a href="tienda.php?filter=promocion" class="bento-card card-promos"
+                style="background-image: url('front/multimedia/d4.png');">
+            </a>
+        </div>
+    </div>
+
+    <!-- Mobile Carousel (Simplified) -->
+
+</div>
 
 
-
-<!-- ================= CATEGORIES SECTION ================= -->
-<div class="container section-padding pt-5 pt-lg-5">
-    <!-- Added pt-5 to push down content below floating search on mobile if margin needed, though search is overlapping hero image bottom, we might need marginTop on container mobile -->
-
-    <!-- Title mobile only "Categorías" if desired, or reuse "Compra por categoría" -->
-
+<!-- ================= CATEGORIES SECTION (Moved Down) ================= -->
+<div class="container section-padding pb-4 pt-1 pt-lg-5">
     <!-- DESKTOP CATEGORIES HEADER -->
-    <div class="row align-items-end mb-5 d-none d-lg-flex">
+    <div class="row align-items-end mb-4 d-none d-lg-flex">
         <div class="col-md-6">
             <h2 class="section-title mb-0" style="font-size: 2rem; letter-spacing: 0.5px;">COMPRA POR CATEGORÍA</h2>
         </div>
@@ -662,40 +827,100 @@ try {
         </div>
     </div>
 
-    <!-- MOBILE CATEGORIES HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-3 d-lg-none mt-4">
-        <h2 class="section-title m-0">Categorías</h2>
-        <a href="tienda.php" class="text-success text-decoration-none fw-bold" style="font-size: 0.9rem;">Ver todo ></a>
-    </div>
+    <!-- MOBILE CATEGORIES (Redesigned Round 3) -->
+    <style>
+        .mobile-cat-scroll-new {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 15px;
+            padding-bottom: 10px;
+            /* Hide scrollbar */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
 
-    <!-- MOBILE CATEGORIES SCROLL -->
-    <div class="position-relative d-lg-none">
-        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileCategories', -1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="mobile-cat-scroll" id="mobileCategories">
+        .mobile-cat-scroll-new::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mobile-cat-item-new {
+            flex: 0 0 auto;
+            /* Changed from percentage to auto so we accept the width of children but we will control icon width */
+            width: 85px;
+            /* Fixed width for the item to ensure uniformity approx 4.5 items */
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .mobile-cat-icon-box {
+            width: 70px;
+            /* Fixed width for ICON */
+            height: 70px;
+            /* Fixed height for ICON */
+            background-color: #EEF8ED;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        .mobile-cat-icon-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mobile-cat-label-new {
+            font-size: 0.75rem;
+            font-weight: 400;
+            text-align: center;
+            line-height: 1.2;
+            color: #1a1a1a;
+            width: 100%;
+            /* Ensure text wraps within the item width */
+            word-wrap: break-word;
+        }
+    </style>
+    <div class="position-relative d-lg-none mt-5 pt-3"> <!-- Added mt-5 and pt-3 to push down below search bar -->
+        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+            <h5 class="fw-bold m-0" style="color:#102e18;">Categorías</h5>
+            <a href="tienda.php" class="text-decoration-none fw-bold" style="color: #4EAE3E; font-size: 0.9rem;">Ver
+                todo <i class="fas fa-chevron-right small"></i></a>
+        </div>
+        <div class="mobile-cat-scroll-new">
             <?php foreach ($categorias as $cat): ?>
-                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="mobile-cat-item">
-                    <div class="mobile-cat-icon-circle">
-                        <!-- Placeholder generic icon or real icon -->
+                <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="mobile-cat-item-new">
+                    <div class="mobile-cat-icon-box">
                         <?php if (!empty($cat['icono_url'])): ?>
                             <img src="<?php echo htmlspecialchars(ltrim($cat['icono_url'], '/')); ?>" alt="Icon">
                         <?php else: ?>
-                            <img src="front/multimedia/cat_placeholder.png" alt="Icon">
+                            <i class="fas fa-leaf text-success" style="font-size: 1.5rem;"></i>
                         <?php endif; ?>
                     </div>
-                    <span class="mobile-cat-name"><?php echo htmlspecialchars($cat['nombre']); ?></span>
+                    <span class="mobile-cat-label-new"><?php echo htmlspecialchars($cat['nombre']); ?></span>
                 </a>
             <?php endforeach; ?>
         </div>
-        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileCategories', 1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
-            <i class="fas fa-chevron-right"></i>
-        </button>
     </div>
 
-    <!-- DESKTOP CATEGORIES CAROUSEL (Updated with Arrows) -->
+    <!-- DESKTOP CATEGORIES GRID (4 COLUMNS - UPDATED) -->
+    <style>
+        @media (min-width: 992px) {
+            .category-item {
+                /* Changed from /3 to /4 for 4 elements */
+                width: calc((100% - 60px) / 4) !important;
+            }
+        }
+    </style>
     <div class="position-relative d-none d-lg-block">
         <button class="carousel-arrow prev-arrow" onclick="scrollCategories(-1)" type="button">
             <i class="fas fa-chevron-left"></i>
@@ -704,13 +929,15 @@ try {
         <div class="categories-carousel" id="categoriesCarousel">
             <?php foreach ($categorias as $cat): ?>
                 <div class="category-item">
-                    <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-card">
+                    <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-card" style="height: 350px;">
                         <?php if (!empty($cat['imagen_url'])): ?>
                             <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>"
                                 alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
                         <?php endif; ?>
                     </a>
-                    <div class="cat-label"><?php echo htmlspecialchars($cat['nombre']); ?></div>
+                    <div class="cat-label mt-2 text-center  text-dark" style="font-size: 1.1rem;">
+                        <?php echo htmlspecialchars($cat['nombre']); ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -719,690 +946,705 @@ try {
             <i class="fas fa-chevron-right"></i>
         </button>
     </div>
+</div>
+<!-- ================= MOBILE NOVEDADES CAROUSEL ================= -->
+<div class="d-lg-none py-4 mb-4" style="background-color: #D1E7D2;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold m-0 text-dark" style="font-size: 1.2rem; line-height: 1.2;">¡Novedades y promos<br>de la
+                semana!</h2>
+            <a href="tienda.php" class="text-success fw-bold text-decoration-none"
+                style="font-size: 0.9rem; color: #4EAE3E !important;">Ver todo ></a>
+        </div>
 
+        <div class="d-flex overflow-auto pb-3"
+            style="gap: 15px; scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none;">
+            <?php foreach ($productos_promocion as $prod): ?>
+                <div class="bg-white rounded-4 p-3 shadow-sm position-relative d-flex flex-column justify-content-between flex-shrink-0"
+                    style="width: 160px; scroll-snap-align: start;">
+
+                    <!-- Discount -->
+                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-1" style="font-size: 0.75rem;">
+                            <?php echo $descuento; ?>%
+                        </span>
+                    <?php endif; ?>
+
+                    <!-- Image -->
+                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="d-block text-center mb-3 mt-2">
+                        <?php if (!empty($prod['imagen_principal'])): ?>
+                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>" class="img-fluid"
+                                style="height: 100px; object-fit: contain;"
+                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                        <?php else: ?>
+                            <img src="front/multimedia/productos/default.png" class="img-fluid"
+                                style="height: 100px; object-fit: contain;">
+                        <?php endif; ?>
+                    </a>
+
+                    <!-- Title -->
+                    <h6 class="fw-bold text-dark mb-1"
+                        style="font-size: 0.95rem; line-height: 1.2; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                    </h6>
+
+                    <!-- Unit Placeholder -->
+                    <p class="text-muted mb-2" style="font-size: 0.75rem;">1 pza</p>
+
+                    <!-- Price -->
+                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                        <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Add Button -->
+                    <div class="text-end mt-auto">
+                        <button class="btn rounded-3 p-0 d-inline-flex align-items-center justify-content-center"
+                            style="width: 35px; height: 35px; background-color: #C6EBC5; border: none; color: #1b5e20;"
+                            onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MOBILE LO MEJOR CAROUSEL ================= -->
+<div class="d-lg-none py-4 mb-4" style="background-color: #F8F8F8;"> <!-- Light gray bg -->
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold m-0 text-dark" style="font-size: 1.2rem; line-height: 1.2;">Lo mejor de Roots</h2>
+            <a href="tienda.php?filter=mejores" class="text-success fw-bold text-decoration-none"
+                style="font-size: 0.9rem; color: #4EAE3E !important;">Ver todo ></a>
+        </div>
+
+        <div class="d-flex overflow-auto pb-3"
+            style="gap: 15px; scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none;">
+            <?php foreach ($productos_top as $prod): ?>
+                <!-- Card Style: White with border/shadow -->
+                <div class="bg-white rounded-4 p-3 shadow-sm position-relative d-flex flex-column justify-content-between flex-shrink-0"
+                    style="width: 160px; scroll-snap-align: start; border: 1px solid #f0f0f0;">
+
+                    <!-- Discount -->
+                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-1" style="font-size: 0.75rem;">
+                            <?php echo $descuento; ?>%
+                        </span>
+                    <?php endif; ?>
+
+                    <!-- Image -->
+                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="d-block text-center mb-3 mt-2">
+                        <?php if (!empty($prod['imagen_principal'])): ?>
+                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>" class="img-fluid"
+                                style="height: 100px; object-fit: contain;"
+                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                        <?php else: ?>
+                            <img src="front/multimedia/productos/default.png" class="img-fluid"
+                                style="height: 100px; object-fit: contain;">
+                        <?php endif; ?>
+                    </a>
+
+                    <!-- Title -->
+                    <h6 class="fw-bold text-dark mb-1"
+                        style="font-size: 0.95rem; line-height: 1.2; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                    </h6>
+
+                    <!-- Unit Placeholder -->
+                    <p class="text-muted mb-2" style="font-size: 0.75rem;">1 pza</p>
+
+                    <!-- Price -->
+                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                        <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                            <div class="text-danger text-decoration-line-through" style="font-size: 0.75rem;">
+                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                        <?php else: ?>
+                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Add Button -->
+                    <div class="text-end mt-auto">
+                        <button class="btn rounded-3 p-0 d-inline-flex align-items-center justify-content-center"
+                            style="width: 35px; height: 35px; background-color: #C6EBC5; border: none; color: #1b5e20;"
+                            onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MOBILE HAZ QUE TU COMPRA CUENTE ================= -->
+<div class="d-lg-none py-2 mb-5">
+    <div class="container">
+        <h2 class="fw-bold m-0 mb-3 text-dark" style="font-size: 1.2rem; line-height: 1.2;">Haz que tu compra cuente
+        </h2>
+
+        <div class="row g-2">
+            <!-- Card 1: Raíces Verdes -->
+            <div class="col-4">
+                <a href="iniciativas.php" class="d-block position-relative rounded-3 overflow-hidden shadow-sm"
+                    style="height: 110px;">
+                    <img src="front/multimedia/r1.png" class="w-100 h-100" style="object-fit: cover;"
+                        alt="Raíces Verdes">
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                        style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
+                        RAÍCES<br>VERDES
+                    </div>
+                </a>
+            </div>
+            <!-- Card 2: Cero Basura -->
+            <div class="col-4">
+                <a href="iniciativas.php" class="d-block position-relative rounded-3 overflow-hidden shadow-sm"
+                    style="height: 110px;">
+                    <img src="front/multimedia/r2.png" class="w-100 h-100" style="object-fit: cover;" alt="Cero Basura">
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                        style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
+                        CERO<br>BASURA
+                    </div>
+                </a>
+            </div>
+            <!-- Card 3: Impulso Local -->
+            <div class="col-4">
+                <a href="impulso_local.php" class="d-block position-relative rounded-3 overflow-hidden shadow-sm"
+                    style="height: 110px;">
+                    <img src="front/multimedia/r3.png" class="w-100 h-100" style="object-fit: cover;"
+                        alt="Impulso Local">
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                        style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
+                        IMPULSO<br>LOCAL
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- ================= MOBILE TABBED PRODUCTS SECTION ================= -->
+<div class="d-lg-none py-4 mb-5" style="background-color: #fff;">
+    <div class="container">
+        <!-- Tabs Nav -->
+        <ul class="nav nav-tabs border-0 justify-content-between mb-4" id="mobileProductTabs" role="tablist">
+            <li class="nav-item" role="presentation" style="flex: 1; text-align: center;">
+                <button class="nav-link active w-100 p-0 pb-2 fw-bold" id="tab-temporada" data-bs-toggle="tab"
+                    data-bs-target="#content-temporada" type="button" role="tab" aria-selected="true"
+                    style="color: #4EAE3E; border: none; border-bottom: 3px solid #4EAE3E; background: transparent; font-size: 0.95rem;">
+                    <?php echo htmlspecialchars($nombre_temporada); ?>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" style="flex: 1; text-align: center;">
+                <button class="nav-link w-100 p-0 pb-2 fw-bold text-muted" id="tab-novedades" data-bs-toggle="tab"
+                    data-bs-target="#content-novedades" type="button" role="tab" aria-selected="false"
+                    style="border: none; background: transparent; font-size: 0.95rem;">
+                    ¡Lo nuevo!
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" style="flex: 1; text-align: center;">
+                <button class="nav-link w-100 p-0 pb-2 fw-bold text-muted" id="tab-promos" data-bs-toggle="tab"
+                    data-bs-target="#content-promos" type="button" role="tab" aria-selected="false"
+                    style="border: none; background: transparent; font-size: 0.95rem;">
+                    ¡Promos!
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mobileProductTabsContent">
+
+            <!-- 1. Temporada Tab -->
+            <div class="tab-pane fade show active" id="content-temporada" role="tabpanel"
+                aria-labelledby="tab-temporada">
+                <div class="row g-3">
+                    <?php if (!empty($productos_temporada)): ?>
+                        <?php foreach ($productos_temporada as $prod): ?>
+                            <div class="col-6">
+                                <div class="bg-white rounded-4 p-3 shadow-sm position-relative d-flex flex-column justify-content-between h-100"
+                                    style="border: 1px solid #f0f0f0;">
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-1"
+                                            style="font-size: 0.75rem;"><?php echo $descuento; ?>%</span>
+                                    <?php endif; ?>
+
+                                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="d-block text-center mb-3 mt-2">
+                                        <?php if (!empty($prod['imagen_principal'])): ?>
+                                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                                class="img-fluid" style="height: 100px; object-fit: contain;"
+                                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                        <?php else: ?>
+                                            <img src="front/multimedia/productos/default.png" class="img-fluid"
+                                                style="height: 100px; object-fit: contain;">
+                                        <?php endif; ?>
+                                    </a>
+
+                                    <h6 class="fw-bold text-dark mb-1"
+                                        style="font-size: 0.95rem; line-height: 1.2; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                                    </h6>
+                                    <p class="text-muted mb-2" style="font-size: 0.75rem;">1 pza</p>
+
+                                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                                        <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                                            <div class="text-danger text-decoration-line-through" style="font-size: 0.75rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php else: ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="text-end mt-auto">
+                                        <button
+                                            class="btn rounded-3 p-0 d-inline-flex align-items-center justify-content-center"
+                                            style="width: 35px; height: 35px; background-color: #C6EBC5; border: none; color: #1b5e20;"
+                                            onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>')">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12 text-center text-muted py-4">No hay productos de temporada.</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- 2. Novedades Tab -->
+            <div class="tab-pane fade" id="content-novedades" role="tabpanel" aria-labelledby="tab-novedades">
+                <div class="row g-3">
+                    <?php if (!empty($productos_novedades)): ?>
+                        <?php foreach ($productos_novedades as $prod): ?>
+                            <div class="col-6">
+                                <div class="bg-white rounded-4 p-3 shadow-sm position-relative d-flex flex-column justify-content-between h-100"
+                                    style="border: 1px solid #f0f0f0;">
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-1"
+                                            style="font-size: 0.75rem;"><?php echo $descuento; ?>%</span>
+                                    <?php endif; ?>
+
+                                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="d-block text-center mb-3 mt-2">
+                                        <?php if (!empty($prod['imagen_principal'])): ?>
+                                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                                class="img-fluid" style="height: 100px; object-fit: contain;"
+                                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                        <?php else: ?>
+                                            <img src="front/multimedia/productos/default.png" class="img-fluid"
+                                                style="height: 100px; object-fit: contain;">
+                                        <?php endif; ?>
+                                    </a>
+
+                                    <h6 class="fw-bold text-dark mb-1"
+                                        style="font-size: 0.95rem; line-height: 1.2; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                                    </h6>
+                                    <p class="text-muted mb-2" style="font-size: 0.75rem;">1 pza</p>
+
+                                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                                        <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                                            <div class="text-danger text-decoration-line-through" style="font-size: 0.75rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php else: ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="text-end mt-auto">
+                                        <button
+                                            class="btn rounded-3 p-0 d-inline-flex align-items-center justify-content-center"
+                                            style="width: 35px; height: 35px; background-color: #C6EBC5; border: none; color: #1b5e20;"
+                                            onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>')">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12 text-center text-muted py-4">No hay productos nuevos.</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- 3. Promos Tab -->
+            <div class="tab-pane fade" id="content-promos" role="tabpanel" aria-labelledby="tab-promos">
+                <div class="row g-3">
+                    <?php if (!empty($productos_promocion)): ?>
+                        <?php foreach ($productos_promocion as $prod): ?>
+                            <div class="col-6">
+                                <div class="bg-white rounded-4 p-3 shadow-sm position-relative d-flex flex-column justify-content-between h-100"
+                                    style="border: 1px solid #f0f0f0;">
+                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-1"
+                                            style="font-size: 0.75rem;"><?php echo $descuento; ?>%</span>
+                                    <?php endif; ?>
+
+                                    <a href="producto.php?id=<?php echo $prod['id']; ?>" class="d-block text-center mb-3 mt-2">
+                                        <?php if (!empty($prod['imagen_principal'])): ?>
+                                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                                class="img-fluid" style="height: 100px; object-fit: contain;"
+                                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
+                                        <?php else: ?>
+                                            <img src="front/multimedia/productos/default.png" class="img-fluid"
+                                                style="height: 100px; object-fit: contain;">
+                                        <?php endif; ?>
+                                    </a>
+
+                                    <h6 class="fw-bold text-dark mb-1"
+                                        style="font-size: 0.95rem; line-height: 1.2; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                        <?php echo htmlspecialchars($prod['nombre']); ?>
+                                    </h6>
+                                    <p class="text-muted mb-2" style="font-size: 0.75rem;">1 pza</p>
+
+                                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                                        <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_oferta'], 2); ?></div>
+                                            <div class="text-danger text-decoration-line-through" style="font-size: 0.75rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php else: ?>
+                                            <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                                $<?php echo number_format($prod['precio_venta'], 2); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="text-end mt-auto">
+                                        <button
+                                            class="btn rounded-3 p-0 d-inline-flex align-items-center justify-content-center"
+                                            style="width: 35px; height: 35px; background-color: #C6EBC5; border: none; color: #1b5e20;"
+                                            onclick="addToCart(<?php echo $prod['id']; ?>, '<?php echo htmlspecialchars($prod['nombre']); ?>', <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>, '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>')">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12 text-center text-muted py-4">No hay promociones activas.</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JS for Tabs Styling -->
     <script>
-        function scrollCategories(direction) {
-            const container = document.getElementById('categoriesCarousel');
-            if (container) {
-                const scrollAmount = 300; // Adjust scroll distance as needed
-                container.scrollBy({
-                    left: direction * scrollAmount,
-                    behavior: 'smooth'
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('#mobileProductTabs .nav-link');
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (e) {
+                    // Update styles
+                    tabs.forEach(t => {
+                        t.style.color = '#6c757d';
+                        t.style.borderBottom = 'none';
+                    });
+                    e.target.style.color = '#4EAE3E';
+                    e.target.style.borderBottom = '3px solid #4EAE3E';
                 });
-            }
-        }
-        function scrollContainer(containerId, direction) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                const scrollAmount = 280; // Approximate card width
-                container.scrollBy({
-                    left: direction * scrollAmount,
-                    behavior: 'smooth'
-                });
-            }
-        }
+            });
+        });
     </script>
 </div>
 
-
-<!-- ================= SEASONAL PRODUCTS (New) ================= -->
-<?php if (!empty($productos_temporada)): ?>
-    <div class="container section-padding pb-0">
-
-        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-            <h2 class="section-title m-0">Productos de <?php echo htmlspecialchars($nombre_temporada); ?></h2>
+<!-- ================= LO MEJOR DE ROOTS (Desktop Only) ================= -->
+<div class="container section-padding d-none d-lg-block">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="section-title" style="font-size: 2rem;">LO MEJOR DE ROOTS</h2>
+            <p class="section-desc">
+                Favoritos de la comunidad.
+            </p>
         </div>
+    </div>
 
+    <div class="row g-4">
+        <?php foreach ($productos_top as $prod): ?>
+            <div class="col-6 col-md-3">
+                <div class="position-relative h-100 d-flex flex-column">
+                    <!-- Discount Badge -->
+                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
+                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
+                        <span class="discount-badge">-<?php echo $descuento; ?>%</span>
+                    <?php endif; ?>
 
+                    <a href="producto.php?id=<?php echo $prod['id']; ?>"
+                        class="product-placeholder mb-3 d-flex align-items-center justify-content-center bg-light-roots"
+                        style="height: 280px; border-radius: 20px;">
+                        <?php if (!empty($prod['imagen_principal'])): ?>
+                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
+                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>"
+                                style="max-height:80%; max-width:80%; object-fit:contain; mix-blend-mode:multiply;">
+                        <?php else: ?>
+                            <img src="front/multimedia/productos/default.png" alt="Producto"
+                                style="max-height:80%; max-width:80%;">
+                        <?php endif; ?>
+                    </a>
 
-        <!-- Mobile Carousel -->
-        <div class="position-relative d-lg-none">
-            <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileSeasonal', -1)" type="button"
-                style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="horizontal-snap-slider" id="mobileSeasonal">
-                <?php foreach ($productos_temporada as $prod): ?>
-                    <div class="snap-item">
-                        <div class="mobile-promo-card">
-                            <div class="mobile-promo-img-container">
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                                <?php endif; ?>
-
-                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                    class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
-                                    <?php if (!empty($prod['imagen_principal'])): ?>
-                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                    <?php else: ?>
-                                        <img src="front/multimedia/productos/default.png" alt="Producto">
-                                    <?php endif; ?>
-                                </a>
-
-                                <button class="mobile-promo-add" onclick="addToCart(
-                                <?php echo $prod['id']; ?>,
-                                '<?php echo htmlspecialchars($prod['nombre']); ?>',
-                                <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
-                                '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
-                            )"><i class="fas fa-plus"></i></button>
-                            </div>
-                            <h5 class="fw-bold mb-1 fs-6 text-truncate">
+                    <div class="d-flex justify-content-between align-items-start flex-grow-1">
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-size: 1rem; color: #333;">
                                 <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
                                     <?php echo htmlspecialchars($prod['nombre']); ?>
                                 </a>
                             </h5>
-                            <div class="d-flex align-items-center">
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                    <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                <?php else: ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileSeasonal', 1)" type="button"
-                style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-
-        <!-- Desktop Grid (Simple row for seasonals) -->
-        <div class="d-none d-lg-block">
-            <div class="row g-4">
-                <?php foreach (array_slice($productos_temporada, 0, 4) as $prod): ?>
-                    <div class="col-md-3">
-                        <div class="product-card-minimal">
-                            <div class="product-placeholder">
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                                <?php endif; ?>
-                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                    class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                    <?php if (!empty($prod['imagen_principal'])): ?>
-                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                    <?php else: ?>
-                                        <img src="front/multimedia/productos/default.png" alt="Producto">
-                                    <?php endif; ?>
-                                </a>
-                                <!-- Hover Add Button could go here -->
-                            </div>
-                            <h5 class="fw-bold mt-3 mb-1"><a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                    class="text-decoration-none text-dark"><?php echo htmlspecialchars($prod['nombre']); ?></a>
-                            </h5>
+                            <!-- Price -->
                             <div class="d-flex align-items-center gap-2">
                                 <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                    <span
-                                        class="fw-bold text-success">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                    <span
-                                        class="text-muted text-decoration-line-through small">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                    <span class="fw-bold"
+                                        style="font-size: 0.95rem;">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
+                                    <span class="text-muted text-decoration-line-through"
+                                        style="font-size: 0.8rem;">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php else: ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
+                                    <span class="fw-bold"
+                                        style="font-size: 0.95rem;">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
-<div class="container section-padding" style="background-color: #fff;">
-    <!-- Mobile Requirement: Green background for specific section? User said "Contenedor con fondo verde suave" for Novedades. Actually let's wrap just this section for mobile in green or global? "Contenedor con fondo verde suave" -->
 
-    <!-- We'll use a wrapper for the background styling on mobile -->
-    <div class="novedades-wrapper py-4 px-2 rounded-3 d-lg-none" style="background-color: #E8F5E9;">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-            <h2 class="section-title m-0">Novedades y promos</h2>
-            <!-- <a href="#" class="text-success fw-bold">></a> -->
-        </div>
-
-        <div class="position-relative">
-            <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobilePromos', -1)" type="button"
-                style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="horizontal-snap-slider" id="mobilePromos">
-                <?php if (!empty($productos_novedades)): ?>
-                    <?php foreach ($productos_novedades as $prod): ?>
-                        <div class="snap-item">
-                            <div class="mobile-promo-card">
-                                <div class="mobile-promo-img-container">
-                                    <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                        <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                        <span class="discount-badge-mobile"><?php echo $descuento; ?>%</span>
-                                    <?php endif; ?>
-
-                                    <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                        class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
-                                        <?php if (!empty($prod['imagen_principal'])): ?>
-                                            <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                                alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                        <?php else: ?>
-                                            <img src="front/multimedia/productos/default.png" alt="Producto">
-                                        <?php endif; ?>
-                                    </a>
-                                </div>
-
-                                <div class="d-flex flex-column flex-grow-1 justify-content-between">
-                                    <div>
-                                        <h5 class="promo-title-mobile">
-                                            <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                                class="text-decoration-none text-dark">
-                                                <?php echo htmlspecialchars($prod['nombre']); ?>
-                                            </a>
-                                        </h5>
-                                        <p class="promo-unit-mobile">1 pieza</p>
-                                        <!-- Placeholder unit, or add dynamic unit if available -->
-                                    </div>
-
-                                    <div class="d-flex justify-content-between align-items-end mt-2">
-                                        <div class="price-container-mobile">
-                                            <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                                <span
-                                                    class="current-price-mobile">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                                <span
-                                                    class="old-price-mobile">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                            <?php else: ?>
-                                                <span
-                                                    class="current-price-mobile">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                            <?php endif; ?>
-                                        </div>
-
-                                        <button class="add-btn-mobile" onclick="addToCart(
-                                            <?php echo $prod['id']; ?>,
-                                            '<?php echo htmlspecialchars($prod['nombre']); ?>',
-                                            <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
-                                            '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
-                                        )"><i class="fas fa-plus"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="text-center w-100 py-3 text-muted">Aún no hay novedades.</div>
-                <?php endif; ?>
-            </div>
-            <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobilePromos', 1)" type="button"
-                style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-
-    <!-- DESKTOP NOVEDADES (Existing Bento Grid) -->
-    <div class="d-none d-lg-block">
-        <div class="text-center mb-5">
-            <h2 class="section-title">Novedades y Promos de la Semana</h2>
-            <p class="section-desc">Encuentra descuentos, nuevos productos y ediciones limitadas,<br>todos con la
-                garantía
-                de estar libres de químicos dañinos.</p>
-            <a href="tienda.php" class="btn-dark-pill">Empieza tu súper <i class="fas fa-chevron-right ms-2"></i></a>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-4">
-                <a href="tienda.php?cat=temporada" class="gray-card card-tall"
-                    style="background-image: url('<?php echo htmlspecialchars(ltrim($configuracion['imagen_temporada'] ?? 'front/multimedia/d1.png', '/')); ?>'); position: relative; background-size: cover; background-position: center;">
-                    <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase"
-                        style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Temporada</span>
-                </a>
-            </div>
-
-            <div class="col-md-4">
-                <div class="d-flex flex-column h-100 gap-4">
-                    <a href="tienda.php?filter=nuevos" class="gray-card card-medium"
-                        style="background-image: url('front/multimedia/d2.png'); position: relative;">
-                        <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase"
-                            style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Nuevos Productos</span>
-                    </a>
-                    <a href="nosotros.php" class="gray-card card-medium"
-                        style="background-image: url('front/multimedia/d3.png'); position: relative;">
-                        <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase"
-                            style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Campañas de impacto</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <a href="tienda.php?filter=ofertas" class="gray-card card-tall"
-                    style="background-image: url('front/multimedia/d4.png'); position: relative;">
-                    <span class="position-absolute bottom-0 start-0 m-4 text-white fw-bold text-uppercase"
-                        style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Descuentos</span>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- ================= LO MEJOR DE ROOTS ================= -->
-<div class="container section-padding">
-    <div class="mb-4 d-flex justify-content-between align-items-end">
-        <div>
-            <h2 class="section-title">Lo Mejor de Roots</h2>
-            <p class="section-desc mb-0 d-none d-lg-block">Desde los más vendidos hasta los favoritos de Roots.</p>
-        </div>
-        <!-- Mobile "Ver todo" could go here if needed -->
-    </div>
-
-    <!-- Mobile view: Grid 2 columns. Desktop: Grid 4 columns (col-md-3) -->
-    <!-- The existing code uses col-6 col-md-3 which is perfect for 2 columns on mobile. Just need to ensure style matches requirements. -->
-
-    <!-- MOBILE: CAROUSEL -->
-    <div class="d-lg-none position-relative">
-        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileBest', -1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; left: -10px;">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="horizontal-snap-slider" id="mobileBest">
-            <?php if (!empty($productos_top)): ?>
-                <?php foreach ($productos_top as $prod): ?>
-                    <div class="snap-item">
-                        <div class="mobile-promo-card"> <!-- Reusing promo card style for consistency -->
-                            <div class="mobile-promo-img-container">
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                    <?php $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100); ?>
-                                    <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                                <?php endif; ?>
-
-                                <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                    class="d-block w-100 h-100 d-flex align-items-center justify-content-center text-decoration-none">
-                                    <?php if (!empty($prod['imagen_principal'])): ?>
-                                        <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                            alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                    <?php else: ?>
-                                        <img src="front/multimedia/productos/default.png" alt="Producto">
-                                    <?php endif; ?>
-                                </a>
-
-                                <button class="mobile-promo-add" onclick="addToCart(
+                        <!-- Add Button -->
+                        <button class="btn p-0 rounded-circle d-flex align-items-center justify-content-center" onclick="addToCart(
                                     <?php echo $prod['id']; ?>,
                                     '<?php echo htmlspecialchars($prod['nombre']); ?>',
                                     <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
                                     '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
-                                )"><i class="fas fa-plus"></i></button>
-                            </div>
-                            <h5 class="fw-bold mb-1 fs-6 text-truncate">
-                                <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
-                                    <?php echo htmlspecialchars($prod['nombre']); ?>
-                                </a>
-                            </h5>
-                            <div class="d-flex align-items-center">
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                    <span class="old-price">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                <?php else: ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="w-100 text-center text-muted">Aún no hay favoritos.</div>
-            <?php endif; ?>
-        </div>
-        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileBest', 1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; right: -10px;">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-
-    <!-- DESKTOP: GRID (Original Layout) -->
-    <div class="row g-4 d-none d-lg-flex">
-        <?php if (!empty($productos_top)): ?>
-            <?php foreach ($productos_top as $prod): ?>
-                <div class="col-md-3">
-                    <div class="product-card-minimal">
-                        <div class="product-placeholder">
-                            <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0 && $prod['precio_oferta'] < $prod['precio_venta']): ?>
-                                <?php
-                                $descuento = round((($prod['precio_venta'] - $prod['precio_oferta']) / $prod['precio_venta']) * 100);
-                                ?>
-                                <span class="discount-badge">-<?php echo $descuento; ?>%</span>
-                            <?php endif; ?>
-
-                            <a href="producto.php?id=<?php echo $prod['id']; ?>"
-                                class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                <?php if (!empty($prod['imagen_principal'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($prod['imagen_principal'], '/')); ?>"
-                                        alt="<?php echo htmlspecialchars($prod['nombre']); ?>">
-                                <?php else: ?>
-                                    <img src="front/multimedia/productos.png" alt="Producto sin imagen">
-                                <?php endif; ?>
-                            </a>
-                        </div>
-                        <h5 class="fw-normal mb-1 text-truncate" style="font-weight: 600 !important; color: #333;">
-                            <a href="producto.php?id=<?php echo $prod['id']; ?>" class="text-decoration-none text-dark">
-                                <?php echo htmlspecialchars($prod['nombre']); ?>
-                            </a>
-                        </h5>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <div>
-                                <?php if (($prod['es_promocion'] ?? 0) == 1 && $prod['precio_oferta'] > 0): ?>
-                                    <span
-                                        class="text-muted text-decoration-line-through small me-1">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_oferta'], 2); ?></span>
-                                <?php else: ?>
-                                    <span class="fw-bold">$<?php echo number_format($prod['precio_venta'], 2); ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <button class="add-btn-circle" onclick="addToCart(
-            <?php echo $prod['id']; ?>,
-            '<?php echo htmlspecialchars($prod['nombre']); ?>',
-            <?php echo $prod['precio_oferta'] ?: $prod['precio_venta']; ?>,
-            '<?php echo htmlspecialchars(ltrim($prod['imagen_principal'] ?? 'front/multimedia/productos/default.png', '/')); ?>'
-        )">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
+                                )"
+                            style="width: 32px; height: 32px; border: 1px solid #4EAE3E; color: #4EAE3E; background: transparent;">
+                            <i class="fas fa-plus" style="font-size: 0.8rem;"></i>
+                        </button>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="col-12 text-center text-muted">Aún no hay productos destacados.</div>
-        <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
     </div>
 </div>
 
+<!-- ================= LO QUE NOS HACE DIFERENTE ================= -->
+<!-- ================= LO QUE NOS HACE DIFERENTE ================= -->
+<style>
+    .bg-different-new {
+        background-image: url('front/multimedia/fondo3.png');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        color: white;
+        /* Ensure text is white as per design */
+    }
 
-<!-- ================= DIFFERENCE SECTION (Desktop Only mostly, or adapt) ================= -->
-<!-- Hiding this complex banner on mobile or keeping it? User didn't specify. Assuming Keep but maybe stack. user said "transformar vista movil... para que coincida con mockups". Mockups usually don't show everything. I will keep it stacked for now. -->
-<div class="container mb-5 d-none d-lg-block">
-    <div class="p-5 rounded-3 text-white d-flex align-items-center" style="
-            background-image: url('front/multimedia/fondo3.png');
-            background-size: cover;
-            background-position: center;
-            min-height: 450px;
-            position: relative;
-            overflow: hidden;
-         ">
-        <div
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 1;">
-        </div>
-        <div class="row w-100 position-relative" style="z-index: 2;">
+    .bg-different-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        /* Darken slightly for readability */
+        z-index: 1;
+    }
+
+    .diff-content {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
+<div class="bg-different-new w-100 my-5 text-white d-none d-lg-block">
+    <div class="bg-different-overlay"></div>
+    <div class="container diff-content py-5">
+        <div class="row align-items-center" style="min-height: 400px;">
+            <!-- Left Column: Title & Button -->
             <div class="col-lg-5 mb-4 mb-lg-0">
-                <h2 class="fw-bold display-5 mb-4 text-uppercase text-shadow" style="line-height: 1.1;">
-                    Lo que nos hace<br>diferente
+                <h2 class="display-4 fw-bold mb-4 text-uppercase text-white" style="line-height: 1.1;">
+                    Lo que nos hace<br>DIFERENTE
                 </h2>
-                <a href="registro.php" class="btn rounded-pill px-4 py-2 fw-bold text-white"
-                    style="background-color: #E67E22; border: none; padding: 12px 30px;">
+                <a href="iniciativas.php" class="btn rounded-pill px-4 py-2 fw-bold text-white"
+                    style="background-color: #F39C12; border: none;">
                     Únete a la comunidad Roots <i class="fas fa-chevron-right ms-2"></i>
                 </a>
             </div>
+
+            <!-- Right Column: Text & Stats -->
             <div class="col-lg-7 ps-lg-5">
-                <p class="mb-4 text-shadow" style="font-size: 1rem; line-height: 1.6; font-weight: 500;">
-                    En Roots Market combinamos la practicidad de un súper tradicional con la
-                    tranquilidad de saber que todos nuestros productos están libres de químicos dañinos.
+                <p class="mb-5 text-white" style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;">
+                    En Roots Market combinamos la practicidad de un súper tradicional con la tranquilidad de saber que
+                    todos nuestros productos están libres de químicos dañinos.<br><br>
+                    Aquí encontrarás productos curados con cuidado, precios justos y la comodidad de hacer tu súper
+                    completo desde casa, mientras cuidas tu salud y la del planeta.
                 </p>
-                <!-- stats... -->
+
+                <div class="row">
+                    <div class="col-6">
+                        <h2 class="display-4 fw-bold mb-0 text-white">100%</h2>
+                        <p class="fs-6 text-white opacity-75">libre de químicos dañinos</p>
+                    </div>
+                    <div class="col-6">
+                        <h2 class="display-4 fw-bold mb-0 text-white">+500</h2>
+                        <p class="fs-6 text-white opacity-75">Productos curados y verificados</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .text-shadow {
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    }
-</style>
 
 
-<!-- ================= HAZ QUE TU COMPRA CUENTE (Impact Section) ================= -->
-<style>
-    .impact-section {
-        padding: 4rem 0;
-        background-color: #fff;
-    }
 
-    .impact-card {
-        background-color: #E0E0E0;
-        border-radius: 20px;
-        height: 300px;
-        width: 100%;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Mobile Styles for Impact Card Slider */
-    .impact-card-mobile {
-        width: 280px;
-        height: 180px;
-        border-radius: 15px;
-        position: relative;
-        background-size: cover;
-        background-position: center;
-        overflow: hidden;
-        margin-right: 15px;
-    }
-
-    .impact-badge-mobile {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        /* Green label */
-        background-color: #4EAE3E;
-        color: white;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .impact-text-mobile {
-        position: absolute;
-        bottom: 15px;
-        left: 15px;
-        color: white;
-        font-weight: 700;
-        font-size: 1.1rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    }
-</style>
-
-<div class="container impact-section mb-5" id="iniciativas">
-
-    <div class="row align-items-end mb-4 mb-lg-5">
-        <div class="col-md-7">
-            <h2 class="section-title mb-3" style="font-size: 1.5rem; letter-spacing: 0.5px;">HAZ QUE TU COMPRA
-                CUENTE
-            </h2>
-            <p class="section-desc mb-0 d-none d-lg-block">
-                En Roots, cada compra tiene un propósito.<br>
-                Con nuestros programas, transformar tu súper en acciones que<br>
-                cuidan el planeta y apoyan a la comunidad es más fácil de lo que imaginas.
+<!-- ================= HAZ QUE TU COMPRA CUENTE & IMPULSO LOCAL ================= -->
+<div class="container section-padding d-none d-lg-block">
+    <!-- Title & Description Row -->
+    <div class="row mb-5 align-items-end">
+        <div class="col-lg-8">
+            <h5 class="text-uppercase text-muted mb-2 fw-bold" style="font-size: 0.9rem;">HAZ QUE TU COMPRA CUENTE</h5>
+            <h2 class="section-title mb-3" style="font-size: 2.5rem; line-height: 1.2;">En Roots, cada compra
+                tiene<br>un propósito.</h2>
+            <p class="section-desc mb-0" style="max-width: 600px;">
+                Con nuestros programas, transformar tu súper en acciones que cuidan el planeta y apoyan a la comunidad
+                es más fácil de lo que imaginas.
             </p>
         </div>
-        <div class="col-md-5 text-md-end mt-4 mt-md-0 d-none d-lg-block">
-            <a href="nosotros.php" class="btn rounded-pill px-4 py-2 fw-bold text-white"
-                style="background-color: #E67E22; border: none; padding: 10px 25px;">
+        <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+            <a href="iniciativas.php" class="btn rounded-pill px-4 py-2 text-white fw-bold"
+                style="background-color: #E67E22; border: none; padding-left: 2rem; padding-right: 2rem;">
                 Conoce más <i class="fas fa-chevron-right ms-2"></i>
             </a>
         </div>
     </div>
 
-    <!-- MOBILE IMPACT SLIDER (Horizontal) -->
-    <div class="position-relative d-lg-none" style="margin-left: 1rem; margin-right: 1rem;">
-        <button class="carousel-arrow prev-arrow" onclick="scrollContainer('mobileImpact', -1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; left: -15px;">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="d-flex" id="mobileImpact"
-            style="overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory;">
-            <!-- Card 1: Raíces Verdes -->
-            <a href="iniciativas.php" class="text-decoration-none text-white d-block me-3"
-                style="flex: 0 0 auto; scroll-snap-align: start;">
-                <div class="impact-card-mobile"
-                    style="background-image: url('front/multimedia/r1.png'); margin-right:0;">
-                    <div class="impact-text-mobile">Raíces Verdes</div>
-                </div>
-            </a>
-            <!-- Card 2: Cero Basura -->
-            <a href="iniciativas.php" class="text-decoration-none text-white d-block me-3"
-                style="flex: 0 0 auto; scroll-snap-align: start;">
-                <div class="impact-card-mobile"
-                    style="background-image: url('front/multimedia/r2.png'); margin-right:0;">
-                    <div class="impact-text-mobile">Cero Basura</div>
-                </div>
-            </a>
-            <!-- Card 3: Impulso Local -->
-            <a href="impulso_local.php" class="text-decoration-none text-white d-block"
-                style="flex: 0 0 auto; scroll-snap-align: start;">
-                <div class="impact-card-mobile"
-                    style="background-image: url('front/multimedia/r3.png'); margin-right:0;">
-                    <div class="impact-text-mobile">Impulso Local</div>
+    <!-- Cards Layout -->
+    <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-4">
+            <a href="iniciativas.php" class="text-decoration-none text-dark d-block">
+                <div class="card-feature rounded-4 overflow-hidden position-relative mb-3"
+                    style="background-image: url('front/multimedia/r1.png'); height: 250px; background-size: cover; background-position: center;">
                 </div>
             </a>
         </div>
-        <button class="carousel-arrow next-arrow" onclick="scrollContainer('mobileImpact', 1)" type="button"
-            style="width: 30px; height: 30px; font-size: 0.8rem; right: -15px;">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-
-    <!-- DESKTOP IMPACT GRID (Existing) -->
-    <div class="row g-4 d-none d-lg-flex">
+        <!-- Card 2 -->
         <div class="col-md-4">
-            <a href="iniciativas.php" class="text-decoration-none">
-                <div class="impact-card"
-                    style="background-image: url('front/multimedia/r1.png'); background-size: cover;">
+            <a href="iniciativas.php" class="text-decoration-none text-dark d-block">
+                <div class="card-feature rounded-4 overflow-hidden position-relative mb-3"
+                    style="background-image: url('front/multimedia/r2.png'); height: 250px; background-size: cover; background-position: center;">
                 </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Raíces Verdes
-                </p>
             </a>
         </div>
+        <!-- Card 3 -->
         <div class="col-md-4">
-            <a href="iniciativas.php" class="text-decoration-none">
-                <div class="impact-card"
-                    style="background-image: url('front/multimedia/r2.png'); background-size: cover;">
+            <a href="impulso_local.php" class="text-decoration-none text-dark d-block">
+                <div class="card-feature rounded-4 overflow-hidden position-relative mb-3"
+                    style="background-image: url('front/multimedia/r3.png'); height: 250px; background-size: cover; background-position: center;">
                 </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Cero Basura
-                </p>
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="impulso_local.php" class="text-decoration-none">
-                <div class="impact-card"
-                    style="background-image: url('front/multimedia/r3.png'); background-size: cover;">
-                </div>
-                <p class="impact-title mt-3" style="font-weight: 600; color: #333; font-size: 1.1rem;">Impulso Local
-                </p>
             </a>
         </div>
     </div>
-</div>
 
-
-<!-- ================= IMPULSO LOCAL SECTION (Desktop?) ================= -->
-<!-- Leaving this as is, maybe stacking for mobile naturally or hiding if too long. 
-     The user didn't explicitly ask to remove it, but focused on the sections above. 
-     I'll wrap it to be visible but ensuring responsive stacking works (Bootstrap col-lg-7 stacks on mobile). 
--->
-<style>
-    .local-impulse-section {
-        padding: 5rem 0;
-        background-color: #fff;
-    }
-
-    .faq-card {
-        border: 1px solid #4EAE3E;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        overflow: hidden;
-        background-color: #fff;
-    }
-
-    .faq-header {
-        padding: 1.2rem 1.5rem;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #fff;
-        transition: background-color 0.2s;
-    }
-
-    .faq-header:hover {
-        background-color: #f9f9f9;
-    }
-
-    .faq-title {
-        font-size: 1.1rem;
-        margin: 0;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .faq-body {
-        padding: 0 1.5rem 1.5rem 1.5rem;
-        color: #666;
-        line-height: 1.6;
-        font-size: 0.95rem;
-    }
-
-    .chevron-icon {
-        color: #333;
-        transition: transform 0.3s ease;
-    }
-
-    .collapsed .chevron-icon {
-        transform: rotate(180deg);
-    }
-</style>
-
-<div class="container local-impulse-section d-none d-lg-block"> <!-- Hiding on mobile to focus on the cards above? Or keep? Request said "Transformar... front/index/body.php". 
-    Actually, point 4 says "Sección 'Haz que tu compra cuente': Slider horizontal...". 
-    It doesn't mention the 'Impulso Local' detailed section below it. 
-    I will hide the desktop specific detailed FAQ for mobile to keep it clean 'Mobile First' as per Mockup likely not showing this text heavy part. 
-    So I added d-none d-lg-block to the container.
--->
-    <div class="row gx-5 align-items-start">
-        <div class="col-lg-5 mb-5 mb-lg-0 pt-2">
-            <h2 class="fw-bold text-uppercase mb-4" style="font-size: 2rem; color: #333;">IMPULSO LOCAL</h2>
-            <p class="text-muted mb-3">En Roots creemos en el talento y la calidad mexicana.</p>
-            <p class="text-muted mb-5" style="line-height: 1.6;">
-                Con Impulso Local, cada compra ayuda a pequeñas y medianas marcas del país a crecer y ofrecer
-                productos honestos y de confianza para tu día a día.
+    <!-- IMPULSO LOCAL SECTION -->
+    <div class="row mt-5 pt-5" id="impulso-local-section">
+        <!-- Left Column: Title, Text, Button -->
+        <div class="col-lg-5 mb-4 mb-lg-0">
+            <h3 class="fw-bold mb-3 text-uppercase" style="color: #333;">IMPULSO LOCAL</h3>
+            <p class="text-muted fw-bold mb-3" style="font-size: 0.95rem;">
+                En Roots creemos en el talento y la calidad mexicana.
             </p>
-            <a href="tienda.php?origen=local" class="btn rounded-pill px-4 py-3 fw-bold text-white"
-                style="background-color: #E67E22; border: none; width: fit-content; padding-left: 30px; padding-right: 30px;">
+            <p class="text-muted mb-4" style="line-height: 1.6;">
+                Con Impulso Local, cada compra ayuda a pequeñas y medianas marcas del país a crecer y ofrecer productos
+                honestos y de confianza para tu día a día.
+            </p>
+            <a href="impulso_local.php" class="btn rounded-pill px-4 py-2 text-white fw-bold shadow-sm"
+                style="background-color: #F39C12; border: none;">
                 Compra productos mexicanos <i class="fas fa-chevron-right ms-2"></i>
             </a>
         </div>
-        <div class="col-lg-7">
+
+        <!-- Right Column: Accordion -->
+        <div class="col-lg-7 ps-lg-5">
             <div class="accordion" id="accordionImpulsoLocal">
-                <div class="faq-card">
-                    <div class="faq-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                        <h5 class="faq-title">¿Qué es Impulso Local?</h5>
-                        <i class="fas fa-chevron-up chevron-icon"></i>
+                <!-- Item 1 -->
+                <div class="mb-3 rounded-2 overflow-hidden border border-success border-opacity-25">
+                    <div class="p-3 bg-white cursor-pointer" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                        aria-expanded="true">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-dark">¿Qué es Impulso Local?</h6>
+                            <i class="fas fa-chevron-up text-muted"></i>
+                        </div>
                     </div>
                     <div id="collapseOne" class="collapse show" data-bs-parent="#accordionImpulsoLocal">
-                        <div class="faq-body">
+                        <div class="px-3 pb-3 bg-white text-muted small">
                             Es nuestro programa que apoya marcas mexicanas, para que cada compra impulse la economía
-                            local.
+                            local y productos de calidad.
                         </div>
                     </div>
                 </div>
-                <!-- ... removed other FAQ items for brevity in mobile edit logic, keeping structure simple -->
-                <div class="faq-card">
-                    <div class="faq-header collapsed" type="button" data-bs-toggle="collapse"
+
+                <!-- Item 2 -->
+                <div class="mb-3 rounded-2 overflow-hidden border border-success border-opacity-25">
+                    <div class="p-3 bg-white cursor-pointer collapsed" data-bs-toggle="collapse"
                         data-bs-target="#collapseTwo">
-                        <h5 class="faq-title">¿Cómo sé que un producto es local?</h5>
-                        <i class="fas fa-chevron-down chevron-icon"></i>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-muted">¿Cómo sé que un producto es local?</h6>
+                            <i class="fas fa-chevron-down text-muted"></i>
+                        </div>
                     </div>
                     <div id="collapseTwo" class="collapse" data-bs-parent="#accordionImpulsoLocal">
-                        <div class="faq-body">
-                            Buscamos identificar claramente estos productos con un sello distintivo.
+                        <div class="px-3 pb-3 bg-white text-muted small">
+                            Busca el distintivo "Impulso Local" en la descripción del producto o usa los filtros en
+                            nuestra tienda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="mb-3 rounded-2 overflow-hidden border border-success border-opacity-25">
+                    <div class="p-3 bg-white cursor-pointer collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-muted">¿Puedo comprar solo productos locales?</h6>
+                            <i class="fas fa-chevron-down text-muted"></i>
+                        </div>
+                    </div>
+                    <div id="collapseThree" class="collapse" data-bs-parent="#accordionImpulsoLocal">
+                        <div class="px-3 pb-3 bg-white text-muted small">
+                            ¡Sí! Contamos con una sección exclusiva para facilitarte el apoyo al talento nacional.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="mb-3 rounded-2 overflow-hidden border border-success border-opacity-25">
+                    <div class="p-3 bg-white cursor-pointer collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-muted">¿Hay beneficios adicionales por comprar local?</h6>
+                            <i class="fas fa-chevron-down text-muted"></i>
+                        </div>
+                    </div>
+                    <div id="collapseFour" class="collapse" data-bs-parent="#accordionImpulsoLocal">
+                        <div class="px-3 pb-3 bg-white text-muted small">
+                            Además de apoyar la economía, reduces la huella de carbono asociada al transporte de larga
+                            distancia.
                         </div>
                     </div>
                 </div>
@@ -1410,3 +1652,19 @@ try {
         </div>
     </div>
 </div>
+
+
+
+
+
+<script>
+    function scrollCategories(direction) {
+        const container = document.getElementById('categoriesCarousel');
+        if (container) {
+            const scrollAmount = 300; // Adjust scroll distance as needed    container.scrollBy({
+            left: direction * scrollAmount,
+                behavior: 'smooth'
+        });
+    }
+    }
+</script>

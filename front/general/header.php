@@ -4,24 +4,24 @@
         position: sticky;
         top: 0;
         z-index: 1050;
-        background-color: #ffffff;
+        background-color: var(--color-bg-white);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         width: 100%;
     }
 
     .header-main {
-        background-color: #ffffff;
+        background-color: var(--color-bg-white);
         padding: 1rem 2rem;
     }
 
     .navbar-brand img {
         height: 40px;
-        /* Filtro verde Roots */
+        /* Filtro verde Roots - Matches brand primary */
         filter: brightness(0) saturate(100%) invert(57%) sepia(78%) saturate(466%) hue-rotate(85deg) brightness(93%) contrast(95%);
     }
 
     .main-nav-links .nav-link {
-        color: #000;
+        color: var(--color-text-main);
         font-weight: 600;
         font-size: 0.95rem;
         margin: 0 1rem;
@@ -30,7 +30,7 @@
 
     .main-nav-links .nav-link:hover,
     .main-nav-links .nav-link.active {
-        color: #4EAE3E;
+        color: var(--color-primary);
     }
 
     .search-container {
@@ -62,7 +62,7 @@
         transform: translateY(-50%);
         width: 35px;
         height: 35px;
-        background-color: #00C853;
+        background-color: var(--color-primary);
         border: none;
         border-radius: 50%;
         color: white;
@@ -73,7 +73,7 @@
     }
 
     .header-icon {
-        color: #00C853;
+        color: var(--color-primary);
         font-size: 1.4rem;
         margin-left: 15px;
         cursor: pointer;
@@ -104,7 +104,7 @@
 
         30% {
             transform: scale(1.3);
-            color: #2d4c48;
+            color: var(--color-secondary);
         }
 
         50% {
@@ -117,7 +117,7 @@
 
         100% {
             transform: scale(1);
-            color: #00C853;
+            color: var(--color-primary);
         }
     }
 
@@ -128,15 +128,12 @@
     /* --- MOBILE SPECIFIC STYLES --- */
     .mobile-top-bar {
         position: absolute;
-        /* Overlay hero */
         top: 0;
         left: 0;
         width: 100%;
         padding: 40px 20px 20px 20px;
-        /* Safe area top padding */
         display: flex;
         flex-direction: column;
-        /* Stack Label and Row */
         align-items: flex-start;
         gap: 5px;
         background: transparent;
@@ -151,7 +148,6 @@
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
-    /* New Row container for Pill and Bell */
     .header-row-bottom {
         display: flex;
         justify-content: space-between;
@@ -170,17 +166,13 @@
         font-weight: 700;
         color: #333;
         font-size: 1rem;
-        /* Ensure it takes available space but leaves room for bell */
         flex-grow: 1;
         margin-right: 15px;
-        /* Separation requested */
-        /* max-width: calc(100% - 60px); remove fixed max width to allow flex to handle */
         min-width: 0;
-        /* Important for flex child truncation */
     }
 
     .location-pill i.fa-map-marker-alt {
-        color: #4EAE3E;
+        color: var(--color-primary);
         margin-right: 8px;
         font-size: 1.1rem;
         flex-shrink: 0;
@@ -193,7 +185,6 @@
         flex-shrink: 0;
     }
 
-    /* Text truncation for long addresses */
     .location-text-content {
         white-space: nowrap;
         overflow: hidden;
@@ -212,12 +203,11 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         position: relative;
         flex-shrink: 0;
-        /* Never shrink */
     }
 
     .notification-circle i {
         font-size: 1.2rem;
-        color: #4EAE3E;
+        color: var(--color-primary);
     }
 
     .notification-dot {
@@ -226,7 +216,7 @@
         right: 0px;
         width: 10px;
         height: 10px;
-        background-color: #FF5722;
+        background-color: var(--color-accent);
         border-radius: 50%;
         border: 2px solid white;
     }
@@ -259,11 +249,11 @@
     }
 
     .nav-item-mobile.active {
-        color: #4EAE3E;
+        color: var(--color-primary);
     }
 
     .cart-float-btn {
-        background-color: #4EAE3E;
+        background-color: var(--color-primary);
         color: white;
         width: 55px;
         height: 55px;
@@ -272,7 +262,6 @@
         justify-content: center;
         align-items: center;
         margin-top: -30px;
-        /* Make it float */
         box-shadow: 0 4px 10px rgba(78, 174, 62, 0.4);
         position: relative;
     }
@@ -286,7 +275,7 @@
         position: absolute;
         top: 0;
         right: 0;
-        background-color: #FF5722;
+        background-color: var(--color-accent);
         color: white;
         font-size: 0.7rem;
         width: 18px;

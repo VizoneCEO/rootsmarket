@@ -1,0 +1,218 @@
+/* Brand System - Roots Market */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap');
+
+:root {
+    /* Colors */
+    --color-primary: #4EAE3E;
+    --color-primary-hover: #3d8b31;
+    --color-secondary: #2d4c48;
+    --color-bg: #f2ece9;
+    --color-bg-white: #ffffff;
+    --color-text-main: #2d4c48;
+    --color-accent: #D32F2F;
+
+    /* Spacing & Radius */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-pill: 50px;
+}
+
+body {
+    font-family: 'Outfit', sans-serif !important;
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+}
+
+/* Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-weight: 700;
+    color: var(--color-secondary);
+}
+
+/* Button Standardisation */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus {
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    box-shadow: 0 4px 10px rgba(78, 174, 62, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(78, 174, 62, 0.2);
+}
+
+/* Text Green Utility */
+.text-green {
+    color: var(--color-secondary) !important;
+}
+
+.text-primary-green {
+    color: var(--color-primary) !important;
+}
+
+/* Card Standardisation */
+.card-roots,
+.product-card,
+.gray-card {
+    border-radius: var(--radius-md) !important;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-roots:hover,
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Inputs */
+.form-control,
+.form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid #e0e0e0;
+    padding: 0.6rem 1rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(78, 174, 62, 0.25);
+}
+
+/* Navbar Tweaks */
+.navbar-brand img {
+    /* Ensure Brand Green filter is consistent */
+    filter: brightness(0) saturate(100%) invert(57%) sepia(78%) saturate(466%) hue-rotate(85deg) brightness(93%) contrast(95%);
+}
+
+.nav-link {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: var(--color-primary) !important;
+    font-weight: 700;
+}
+
+/* Custom Utilities based on User Design */
+.bg-light-roots {
+    background-color: #f9f9f9;
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    color: var(--color-secondary);
+}
+
+.badge-promocion {
+    background-color: var(--color-accent);
+    color: white;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+}
+
+/* Footer margin fix (global override if needed) */
+footer {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* --- Index Layout Specifics --- */
+.section-orange {
+    background-color: #E67E22;
+    /* Fallback */
+    background: linear-gradient(90deg, #F39C12 0%, #E67E22 100%);
+    color: white;
+}
+
+.brand-bar-logo {
+    height: 25px;
+    opacity: 0.8;
+    filter: brightness(0) invert(1);
+    /* Make white */
+    transition: opacity 0.3s;
+}
+
+.brand-bar-logo:hover {
+    opacity: 1;
+}
+
+/* Different Section */
+.bg-different-section {
+    background: url('../multimedia/fondo_diferente.jpg') center/cover no-repeat;
+    /* Placeholder path */
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+}
+
+/* Use a darkish overlay for text readability if image is bright */
+.bg-different-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Impulso Local Cards */
+.card-feature {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-feature-label {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 5px 15px;
+    border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
