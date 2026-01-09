@@ -45,7 +45,7 @@ if (isset($_GET['action'])) {
                         catalogo_id, nombre, sku, descripcion_corta, descripcion_larga, precio_compra, precio_venta, precio_oferta, origen,
                         es_organico, es_vegano, es_vegetariano, es_sin_gluten, tiene_azucar, es_promocion, porcion_info, calorias, proteinas_g, carbohidratos_g, grasas_g, azucares_g, fibra_g, sodio_mg,
                         calificacion, estatus
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     $stmt_producto = $pdo->prepare($sql_producto);
                     $stmt_producto->execute([

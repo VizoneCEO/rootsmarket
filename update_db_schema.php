@@ -3,7 +3,7 @@ require_once(__DIR__ . '/back/conection/db.php');
 
 $queries = [
     // Prompt 2: Mobile Categories Icons
-    "ALTER TABLE catalogos ADD COLUMN IF NOT EXISTS icono_movil VARCHAR(255) DEFAULT NULL",
+    "ALTER TABLE catalogos ADD COLUMN IF NOT EXISTS icono_url VARCHAR(255) DEFAULT NULL",
 
     // Prompt 3: Dynamic Promotions & News
     "ALTER TABLE productos ADD COLUMN IF NOT EXISTS es_novedad TINYINT(1) DEFAULT 0",
