@@ -110,15 +110,17 @@ try {
     /* Desktop Hero */
     .hero-section-desktop {
         background-color: #666666;
-        height: 500px;
+        height: 600px;
+        /* Increased height for better impact */
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
-        text-align: center;
+        align-items: flex-start;
+        /* Aligned left */
+        text-align: left;
         color: white;
-        padding: 20px;
-        background-image: url('front/multimedia/fondo1.png');
+        padding: 0;
+        background-image: url('front/multimedia/la1.png');
         background-size: cover;
         background-position: center;
     }
@@ -126,8 +128,8 @@ try {
     /* Mobile Hero */
     .hero-section-mobile {
         position: relative;
-        height: 380px;
-        background-image: url('front/multimedia/fondo1.png');
+        height: 450px;
+        background-image: url('front/multimedia/la1.png');
         background-size: cover;
         background-position: center;
         display: flex;
@@ -636,24 +638,55 @@ try {
 
 <!-- Desktop Hero -->
 <div class="hero-section-desktop d-none d-lg-flex position-relative">
-    <div style="z-index: 2;">
-        <h1 class="hero-title text-white">Compra con Propósito</h1>
-        <p class="hero-subtitle text-white">
-            Todo lo que necesitas para tu día a día, libre de químicos dañinos.<br>
+    <div
+        style="z-index: 2; position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding-left: 10%;">
+        <div class="d-flex align-items-center mb-2">
+            <!-- Badges if needed, or rely on background image containing them if they are illustrative. 
+                 The user said "trabaje de fondo con la imagen la1.png", if the characters and badges are in the image, 
+                 I just need to position the text. 
+                 If they are separate elements, I would need them. 
+                 Assuming the text COMPRA CON PROPÓSITO needs to be bold and specific. -->
+        </div>
+
+        <h1 class="hero-title text-white text-uppercase"
+            style="font-size: 4rem; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            COMPRA<br>CON PROPÓSITO
+        </h1>
+
+        <p class="hero-subtitle text-white mt-3"
+            style="font-size: 1.2rem; max-width: 500px; text-align: left; font-weight: 500;">
+            Todo lo que necesitas para tu día a día, libre de químicos dañinos.
             Saludable, confiable y al alcance de un clic.
         </p>
-        <a href="tienda.php" class="btn btn-primary rounded-pill px-4 py-2 mt-4 fw-bold">Empieza tu súper</a>
+
+        <a href="tienda.php" class="btn btn-primary rounded-pill px-5 py-3 mt-4 fw-bold" style="font-size: 1.1rem;">
+            Empieza tu súper <i class="fas fa-chevron-right ms-2"></i>
+        </a>
     </div>
-    <!-- Overlay for better text contrast if background is light -->
-    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3); z-index: 1;">
-    </div>
+
+    <!-- Badges - Positioned absolutely to match "Image 2" roughly if they are text overlaps, 
+         but likely they are part of the illustration or need distinct HTML. 
+         Adding placeholders for them just in case they are needed as text elements. -->
+
+    <!-- "SIN NITRATOS" Badge (Green) -->
+    <!-- <div style="position: absolute; top: 15%; right: 15%; background: #4EAE3E; color: white; padding: 5px 15px; transform: rotate(-5deg); font-weight: bold; border-radius: 10px; font-size: 1.2rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">SIN NITRATOS</div> -->
+
+    <!-- "SIN NITRITOS" Badge (Orange) -->
+    <!-- <div style="position: absolute; top: 35%; right: 35%; background: #F39C12; color: white; padding: 5px 15px; transform: rotate(5deg); font-weight: bold; border-radius: 10px; font-size: 1.2rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">SIN NITRITOS</div> -->
+
+    <!-- Overlay -->
+    <!-- <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.1); z-index: 1; pointer-events: none;"></div> -->
 </div>
 
 <!-- Mobile Hero -->
-<div class="hero-section-mobile d-flex d-lg-none">
+<div class="hero-section-mobile d-flex d-lg-none flex-column justify-content-center text-center px-4">
     <div class="hero-mobile-overlay"></div>
-    <div class="d-flex flex-column align-items-center justify-content-center w-100" style="z-index: 2;">
-        <div class="hero-title-mobile text-white text-center" style="font-size: 1.5rem;">COMPRA CON<br>PROPÓSITO</div>
+    <div style="z-index: 2;">
+        <h1 class="hero-title-mobile text-white mb-3">COMPRA CON<br>PROPÓSITO</h1>
+        <p class="text-white mb-4" style="font-size: 1rem; opacity: 0.9;">
+            Libre de químicos dañinos.<br>Saludable y confiable.
+        </p>
+        <a href="tienda.php" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Empieza tu súper</a>
     </div>
 
     <form class="hero-search-float d-flex align-items-center px-2" action="tienda.php" method="GET">
