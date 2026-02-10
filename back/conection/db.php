@@ -1,4 +1,3 @@
-
 <?php
 // Configuración de la base de datos
 $host = 'localhost';
@@ -11,9 +10,9 @@ $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
 
 // Opciones de PDO
 $options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
+    PDO::ATTR_EMULATE_PREPARES => false,
 ];
 
 try {
@@ -22,6 +21,5 @@ try {
 } catch (PDOException $e) {
     // Si la conexión falla, se detiene la ejecución y se muestra un mensaje de error
     // En un entorno de producción, es mejor registrar el error en lugar de mostrarlo al usuario
-    throw new PDOException($e->getMessage(), (int)$e->getCode());
+    throw new PDOException($e->getMessage(), (int) $e->getCode());
 }
-?>

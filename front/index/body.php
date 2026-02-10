@@ -130,8 +130,9 @@ try {
         position: relative;
         height: 450px;
         background-image: url('front/multimedia/la1.png');
+        /* background-image: url('https://placehold.co/800x450/666666/FFFFFF?text=Mascota+Temporal');  Placeholder Mascota option */
         background-size: cover;
-        background-position: center;
+        background-position: center bottom; /* Adjusted to likely show mascot if it is at the bottom */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -909,7 +910,8 @@ try {
         .mobile-cat-icon-box img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            padding: 15px;
         }
 
         .mobile-cat-label-new {
@@ -1134,7 +1136,7 @@ try {
                     style="height: 110px;">
                     <img src="front/multimedia/r1.png" class="w-100 h-100" style="object-fit: cover;"
                         alt="Raíces Verdes">
-                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end d-none d-md-block"
                         style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
                         RAÍCES<br>VERDES
                     </div>
@@ -1145,7 +1147,7 @@ try {
                 <a href="iniciativas.php" class="d-block position-relative rounded-3 overflow-hidden shadow-sm"
                     style="height: 110px;">
                     <img src="front/multimedia/r2.png" class="w-100 h-100" style="object-fit: cover;" alt="Cero Basura">
-                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end d-none d-md-block"
                         style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
                         CERO<br>BASURA
                     </div>
@@ -1157,7 +1159,7 @@ try {
                     style="height: 110px;">
                     <img src="front/multimedia/r3.png" class="w-100 h-100" style="object-fit: cover;"
                         alt="Impulso Local">
-                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end"
+                    <div class="position-absolute top-50 start-0 translate-middle-y text-white p-1 ps-2 pe-2 rounded-end d-none d-md-block"
                         style="background-color: #388E3C; font-size: 0.55rem; line-height: 1.1; font-weight: 800; letter-spacing: 0.5px;">
                         IMPULSO<br>LOCAL
                     </div>
@@ -1694,10 +1696,11 @@ try {
     function scrollCategories(direction) {
         const container = document.getElementById('categoriesCarousel');
         if (container) {
-            const scrollAmount = 300; // Adjust scroll distance as needed    container.scrollBy({
-            left: direction * scrollAmount,
+            const scrollAmount = 300; // Adjust scroll distance as needed
+            container.scrollBy({
+                left: direction * scrollAmount,
                 behavior: 'smooth'
-        });
-    }
+            });
+        }
     }
 </script>

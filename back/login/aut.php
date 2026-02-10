@@ -39,13 +39,16 @@ function redirigirPorRol($rol)
             header('Location: ../../front/admin/perfilAdmin.php'); // Debes crear esta ruta
             break;
         case 'deliver':
-            header('Location: ../../deliver/pedidos.php'); // Debes crear esta ruta
+            header('Location: ../../front/admin/perfilAdmin.php?page=entregas');
+            break;
+        case 'contador':
+            header('Location: ../../front/admin/perfilAdmin.php?page=contabilidad');
             break;
         case 'manager':
             header('Location: ../../manager/reportes.php'); // Debes crear esta ruta
             break;
         case 'vendedor':
-            header('Location: ../../vendedor/ventas.php'); // Debes crear esta ruta
+            header('Location: ../../front/admin/perfilAdmin.php?page=ventas');
             break;
         default:
             // Si el rol es desconocido, redirige a la página principal por seguridad.

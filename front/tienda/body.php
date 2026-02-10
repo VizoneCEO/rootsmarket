@@ -22,9 +22,9 @@ try {
 }
 
 try {
-    // A) OBTENER CATEGORÍAS PARA EL SELECT (Y GRID MOVIL) - Updated to fetch imagen_url
+    // A) OBTENER CATEGORÍAS PARA EL SELECT (Y GRID MOVIL) - Updated to fetch imagen_url and icono_url
     // Assuming 'imagen_url' exists as per index.php usage.
-    $stmt_cat = $pdo->prepare("SELECT id, nombre, imagen_url FROM catalogos WHERE estatus = 'activo' ORDER BY nombre ASC");
+    $stmt_cat = $pdo->prepare("SELECT id, nombre, imagen_url, icono_url FROM catalogos WHERE estatus = 'activo' ORDER BY nombre ASC");
     $stmt_cat->execute();
     $categorias = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
 
@@ -512,10 +512,12 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                         <a href="tienda.php?categoria=<?php echo $cat['id']; ?>" class="cat-mobile-card">
                             <div class="cat-mobile-name"><?php echo htmlspecialchars($cat['nombre']); ?></div>
                             <div class="cat-mobile-circle" style="background-color: <?php echo $color_bg; ?>;">
-                                <?php if (!empty($cat['imagen_url'])): ?>
+                                <?php if (!empty($cat['icono_url'])): ?>
+                                    <img src="<?php echo htmlspecialchars(ltrim($cat['icono_url'], '/')); ?>" alt="Icon">
+                                <?php elseif (!empty($cat['imagen_url'])): ?>
                                     <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>" alt="Cat">
                                 <?php else: ?>
-                                    <img src="front/multimedia/cat_placeholder.png" alt="Cat">
+                                    <i class="fas fa-leaf" style="font-size: 1.5rem; color: #599332;"></i>
                                 <?php endif; ?>
                             </div>
                         </a>

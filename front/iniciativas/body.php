@@ -168,7 +168,8 @@
                 </div>
                 <h4 class="card-title">Raíces Verdes</h4>
                 <p class="card-text">Tus compras ayudan a plantar árboles y regenerar el planeta.</p>
-                <a href="#" class="btn-orange-pill">Conoce más <i class="fas fa-chevron-right ms-1"></i></a>
+                <a href="raices_verdes.php" class="btn-orange-pill">Conoce más <i
+                        class="fas fa-chevron-right ms-1"></i></a>
             </div>
         </div>
 
@@ -181,7 +182,8 @@
                 </div>
                 <h4 class="card-title">Cero Basura</h4>
                 <p class="card-text">Damos nueva vida a tus empaques y reducimos los residuos juntos.</p>
-                <a href="#" class="btn-orange-pill">Conoce más <i class="fas fa-chevron-right ms-1"></i></a>
+                <a href="cero_basura.php" class="btn-orange-pill">Conoce más <i
+                        class="fas fa-chevron-right ms-1"></i></a>
             </div>
         </div>
 
