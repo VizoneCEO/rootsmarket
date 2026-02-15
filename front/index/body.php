@@ -120,7 +120,7 @@ try {
         text-align: left;
         color: white;
         padding: 0;
-        background-image: url('front/multimedia/la1.png');
+        background-image: url('front/multimedia/fondoP2.jpg');
         background-size: cover;
         background-position: center;
     }
@@ -129,10 +129,11 @@ try {
     .hero-section-mobile {
         position: relative;
         height: 450px;
-        background-image: url('front/multimedia/la1.png');
+        background-image: url('front/multimedia/fondoP2M.jpg');
         /* background-image: url('https://placehold.co/800x450/666666/FFFFFF?text=Mascota+Temporal');  Placeholder Mascota option */
         background-size: cover;
-        background-position: center bottom; /* Adjusted to likely show mascot if it is at the bottom */
+        background-position: center bottom;
+        /* Adjusted to likely show mascot if it is at the bottom */
         display: flex;
         align-items: center;
         justify-content: center;

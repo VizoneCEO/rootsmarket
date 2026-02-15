@@ -155,20 +155,75 @@
         text-decoration: none;
         margin: 0 5px;
     }
+
+    /* --- CINEMA CAROUSEL --- */
+    .logo-carousel {
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+
+    .logo-track {
+        display: flex;
+        gap: 60px;
+        /* Spacing between logos */
+        animation: scroll 20s linear infinite;
+        width: max-content;
+        align-items: center;
+    }
+
+    .logo-track img {
+        height: 50px;
+        /* Adjust height to fit strip */
+        width: auto;
+        object-fit: contain;
+        /* Optional: make white if they are dark logos on orange background */
+        /* filter: brightness(0) invert(1); */
+        transition: transform 0.3s;
+    }
+
+    .logo-track img:hover {
+        transform: scale(1.1);
+    }
+
+    @keyframes scroll {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
 </style>
 
 <footer class="footer-green-section" id="contacto">
     <!-- Brand Bar (Orange Strip) -->
     <div class="section-orange py-3">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 px-md-5">
-                <!-- Placeholders for Brands - Using Text for now as specific logos weren't provided file paths -->
-                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">SHEFINDS</span>
-                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">YAHOO!</span>
-                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">Healthline</span>
-                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">YAHOO!
-                    NEWS</span>
-                <span class="fw-bold text-white text-uppercase" style="opacity:0.9; font-size:0.9rem;">msn</span>
+            <div class="logo-carousel">
+                <div class="logo-track">
+                    <!-- Original Set -->
+                    <img src="/rootsmarket/front/multimedia/emp1.jpeg" alt="Partner 1">
+                    <img src="/rootsmarket/front/multimedia/emp2.jpeg" alt="Partner 2">
+                    <img src="/rootsmarket/front/multimedia/emp3.jpeg" alt="Partner 3">
+                    <img src="/rootsmarket/front/multimedia/emp4.jpeg" alt="Partner 4">
+                    <img src="/rootsmarket/front/multimedia/emp5.jpeg" alt="Partner 5">
+                    <img src="/rootsmarket/front/multimedia/emp6.jpeg" alt="Partner 6">
+
+                    <!-- Duplicate Set (for infinite loop) -->
+                    <img src="/rootsmarket/front/multimedia/emp1.jpeg" alt="Partner 1">
+                    <img src="/rootsmarket/front/multimedia/emp2.jpeg" alt="Partner 2">
+                    <img src="/rootsmarket/front/multimedia/emp3.jpeg" alt="Partner 3">
+                    <img src="/rootsmarket/front/multimedia/emp4.jpeg" alt="Partner 4">
+                    <img src="/rootsmarket/front/multimedia/emp5.jpeg" alt="Partner 5">
+                    <img src="/rootsmarket/front/multimedia/emp6.jpeg" alt="Partner 6">
+                </div>
             </div>
         </div>
     </div>

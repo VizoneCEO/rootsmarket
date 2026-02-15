@@ -17,8 +17,12 @@ if ($action === 'get_orders_admin') {
 
         $params = [];
         if (!empty($status)) {
-            $sql .= " AND p.estatus_envio = ?";
-            $params[] = $status;
+            if ($status === 'asignado_o_enviado') {
+                $sql .= " AND (p.estatus_envio = 'asignado' OR p.estatus_envio = 'enviado')";
+            } else {
+                $sql .= " AND p.estatus_envio = ?";
+                $params[] = $status;
+            }
         }
 
         $sql .= " ORDER BY p.fecha DESC";
@@ -82,14 +86,53 @@ if ($action === 'get_orders_admin') {
             exit;
         }
 
-        // Assign driver and set status to 'enviado'
-        $stmt = $pdo->prepare("UPDATE pedidos SET repartidor_id = ?, estatus_envio = 'enviado' WHERE id = ?");
+        // Assign driver and set status to 'asignado'
+        $stmt = $pdo->prepare("UPDATE pedidos SET repartidor_id = ?, estatus_envio = 'asignado' WHERE id = ?");
         $stmt->execute([$driverId, $orderId]);
 
         echo json_encode(['status' => 'success']);
 
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => 'Error assigning driver: ' . $e->getMessage()]);
+    }
+
+} elseif ($action === 'start_route') {
+    try {
+        $orderId = $_POST['order_id'];
+        $qrCode = $_POST['qr_code'];
+
+        if (empty($orderId) || empty($qrCode)) {
+            echo json_encode(['status' => 'error', 'message' => 'Faltan parámetros']);
+            exit;
+        }
+
+        // Validate QR Code format: ROOTS-ORDER-{id}-USER-{uid}
+        // We need to fetch the user_id to validate strictly, or just trust the ID part if we want to be lenient.
+        // Let's be strict.
+        $stmt = $pdo->prepare("SELECT user_id FROM pedidos WHERE id = ?");
+        $stmt->execute([$orderId]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            echo json_encode(['status' => 'error', 'message' => 'Pedido no encontrado']);
+            exit;
+        }
+
+        $expectedQr = "ROOTS-ORDER-" . $orderId . "-USER-" . $order['user_id'];
+
+        if ($qrCode !== $expectedQr) {
+            echo json_encode(['status' => 'error', 'message' => 'Código QR incorrecto o no coincide con este pedido']);
+            exit;
+        }
+
+        // Update status to 'enviado'
+        $stmt = $pdo->prepare("UPDATE pedidos SET estatus_envio = 'enviado' WHERE id = ?");
+        $stmt->execute([$orderId]);
+
+        echo json_encode(['status' => 'success']);
+
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Error starting route: ' . $e->getMessage()]);
     }
 
 } elseif ($action === 'cancel_order') {
@@ -122,6 +165,8 @@ if ($action === 'get_orders_admin') {
             exit;
         }
 
+        $metodoPagoEntrega = $_POST['metodo_pago_entrega'] ?? null;
+
         $evidencePath = null;
         if (isset($_FILES['evidence_photo']) && $_FILES['evidence_photo']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = '../front/uploads/evidence/';
@@ -140,8 +185,8 @@ if ($action === 'get_orders_admin') {
             }
         }
 
-        $stmt = $pdo->prepare("UPDATE pedidos SET estatus_envio = 'entregado', recibido_por = ?, evidencia_foto = ? WHERE id = ?");
-        $stmt->execute([$receivedBy, $evidencePath, $orderId]);
+        $stmt = $pdo->prepare("UPDATE pedidos SET estatus_envio = 'entregado', recibido_por = ?, evidencia_foto = ?, metodo_pago_entrega = ? WHERE id = ?");
+        $stmt->execute([$receivedBy, $evidencePath, $metodoPagoEntrega, $orderId]);
 
         echo json_encode(['status' => 'success']);
 

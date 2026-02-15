@@ -2,7 +2,9 @@
 //======================================================================
 // INICIO DE LA LÓGICA DE LA PÁGINA
 //======================================================================
-session_start();
+// --- SEGURIDAD: VERIFICAR SESIÓN DE ADMIN ---
+$allowed_roles = ['administrador'];
+require_once dirname(__DIR__, 2) . '/back/check_admin_session.php';
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
 require_once(__DIR__ . '/../../back/conection/db.php');
@@ -69,7 +71,9 @@ try {
                     </thead>
                     <tbody>
                         <?php if (empty($usuarios)): ?>
-                            <tr><td colspan="6" class="text-center">No hay usuarios registrados.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center">No hay usuarios registrados.</td>
+                            </tr>
                         <?php else: ?>
                             <?php foreach ($usuarios as $usuario): ?>
                                 <tr>
@@ -77,27 +81,26 @@ try {
                                     <td><?php echo htmlspecialchars($usuario['nombre']); ?></td>
                                     <td><?php echo htmlspecialchars($usuario['email']); ?></td>
                                     <td>
-                                        <span class="badge bg-primary"><?php echo htmlspecialchars(ucfirst($usuario['nombre_rol'])); ?></span>
+                                        <span
+                                            class="badge bg-primary"><?php echo htmlspecialchars(ucfirst($usuario['nombre_rol'])); ?></span>
                                     </td>
                                     <td>
-                                        <span class="badge <?php echo $usuario['estatus'] == 'activo' ? 'bg-success' : 'bg-danger'; ?>">
+                                        <span
+                                            class="badge <?php echo $usuario['estatus'] == 'activo' ? 'bg-success' : 'bg-danger'; ?>">
                                             <?php echo ucfirst($usuario['estatus']); ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary edit-user-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editUserModal"
-                                                data-usuario='<?php echo htmlspecialchars(json_encode($usuario), ENT_QUOTES, 'UTF-8'); ?>'
-                                                title="Editar Usuario">
+                                        <button class="btn btn-sm btn-outline-primary edit-user-btn" data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal"
+                                            data-usuario='<?php echo htmlspecialchars(json_encode($usuario), ENT_QUOTES, 'UTF-8'); ?>'
+                                            title="Editar Usuario">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger delete-user-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#deleteUserModal"
-                                                data-id="<?php echo $usuario['id']; ?>"
-                                                data-nombre="<?php echo htmlspecialchars($usuario['nombre']); ?>"
-                                                title="Eliminar Usuario">
+                                        <button class="btn btn-sm btn-outline-danger delete-user-btn" data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal" data-id="<?php echo $usuario['id']; ?>"
+                                            data-nombre="<?php echo htmlspecialchars($usuario['nombre']); ?>"
+                                            title="Eliminar Usuario">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -137,7 +140,8 @@ try {
                         <select class="form-select" id="add_rol_id" name="rol_id" required>
                             <option value="" disabled selected>Selecciona un rol...</option>
                             <?php foreach ($roles as $rol): ?>
-                                <option value="<?php echo $rol['id']; ?>"><?php echo htmlspecialchars(ucfirst($rol['nombre_rol'])); ?></option>
+                                <option value="<?php echo $rol['id']; ?>">
+                                    <?php echo htmlspecialchars(ucfirst($rol['nombre_rol'])); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -174,7 +178,8 @@ try {
                         <label for="edit_rol_id" class="form-label">Rol</label>
                         <select class="form-select" id="edit_rol_id" name="rol_id" required>
                             <?php foreach ($roles as $rol): ?>
-                                <option value="<?php echo $rol['id']; ?>"><?php echo htmlspecialchars(ucfirst($rol['nombre_rol'])); ?></option>
+                                <option value="<?php echo $rol['id']; ?>">
+                                    <?php echo htmlspecialchars(ucfirst($rol['nombre_rol'])); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -203,7 +208,7 @@ try {
 </div>
 
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-     <div class="modal-dialog">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteUserModalLabel">Confirmar Eliminación de Usuario</h5>
@@ -225,36 +230,36 @@ try {
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- Script para llenar el modal de EDITAR USUARIO ---
-    const editUserModal = document.getElementById('editUserModal');
-    if(editUserModal) {
-        editUserModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const usuario = JSON.parse(button.getAttribute('data-usuario'));
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Script para llenar el modal de EDITAR USUARIO ---
+        const editUserModal = document.getElementById('editUserModal');
+        if (editUserModal) {
+            editUserModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const usuario = JSON.parse(button.getAttribute('data-usuario'));
 
-            const modal = this;
-            modal.querySelector('#edit_user_id').value = usuario.id;
-            modal.querySelector('#edit_nombre').value = usuario.nombre;
-            modal.querySelector('#edit_email').value = usuario.email;
-            modal.querySelector('#edit_rol_id').value = usuario.rol_id;
-            modal.querySelector('#edit_estatus').value = usuario.estatus;
-            modal.querySelector('#edit_password').value = ''; // Limpiar campo de contraseña
-        });
-    }
+                const modal = this;
+                modal.querySelector('#edit_user_id').value = usuario.id;
+                modal.querySelector('#edit_nombre').value = usuario.nombre;
+                modal.querySelector('#edit_email').value = usuario.email;
+                modal.querySelector('#edit_rol_id').value = usuario.rol_id;
+                modal.querySelector('#edit_estatus').value = usuario.estatus;
+                modal.querySelector('#edit_password').value = ''; // Limpiar campo de contraseña
+            });
+        }
 
-    // --- Script para llenar el modal de ELIMINAR USUARIO ---
-    const deleteUserModal = document.getElementById('deleteUserModal');
-    if(deleteUserModal) {
-        deleteUserModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            const nombre = button.getAttribute('data-nombre');
+        // --- Script para llenar el modal de ELIMINAR USUARIO ---
+        const deleteUserModal = document.getElementById('deleteUserModal');
+        if (deleteUserModal) {
+            deleteUserModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-id');
+                const nombre = button.getAttribute('data-nombre');
 
-            const modal = this;
-            modal.querySelector('#delete_user_name').textContent = nombre;
-            modal.querySelector('#delete_user_id').value = id;
-        });
-    }
-});
+                const modal = this;
+                modal.querySelector('#delete_user_name').textContent = nombre;
+                modal.querySelector('#delete_user_id').value = id;
+            });
+        }
+    });
 </script>

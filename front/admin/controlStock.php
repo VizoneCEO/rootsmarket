@@ -1,7 +1,13 @@
 <?php
+// --- SEGURIDAD: VERIFICAR SESIÓN DE ADMIN ---
+// Se especifica que managers también pueden ver stock si es necesario, pero por defecto admin.
+$allowed_roles = ['administrador', 'manager'];
+require_once dirname(__DIR__, 2) . '/back/check_admin_session.php';
+
 // --- CONEXIÓN A LA BASE DE DATOS ---
 // Ajustar ruta si es necesario, asumiendo estructura estándar
 require_once dirname(__DIR__, 2) . '/back/conection/db.php';
+
 
 // --- CONSULTA DE DATOS ---
 try {

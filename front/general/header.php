@@ -1,3 +1,8 @@
+<?php
+if (!isset($base_url)) {
+    $base_url = './';
+}
+?>
 <style>
     /* ----- Estilos Generales Header ----- */
     .header-wrapper {
@@ -127,7 +132,7 @@
 
     /* --- MOBILE SPECIFIC STYLES --- */
     .mobile-top-bar {
-        position: absolute;
+        position: relative;
         top: 0;
         left: 0;
         width: 100%;
@@ -169,6 +174,8 @@
         flex-grow: 1;
         margin-right: 15px;
         min-width: 0;
+        position: relative;
+        z-index: 20;
     }
 
     .location-pill i.fa-map-marker-alt {
@@ -288,31 +295,139 @@
 </style>
 
 <!-- MOBILE TOP BAR (d-block d-lg-none) -->
-<?php if (basename($_SERVER['PHP_SELF']) == 'index.php'): ?>
+<?php if (isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) != 'checkout.php'): ?>
+    <?php
+    $addresses = [];
+    $defaultAddress = 'Seleccionar Dirección';
+
+    try {
+        // Ensure DB connection is available
+        if (!isset($pdo)) {
+            $dbPath = __DIR__ . '/../../back/conection/db.php';
+            require_once $dbPath;
+        }
+
+        if (isset($pdo) && isset($_SESSION['user_id'])) {
+            $stmt = $pdo->prepare("SELECT * FROM direcciones_envio WHERE user_id = ? ORDER BY es_principal DESC");
+            $stmt->execute([$_SESSION['user_id']]);
+            $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (isset($_SESSION['selected_address_label'])) {
+                $defaultAddress = $_SESSION['selected_address_label'];
+            } elseif (!empty($addresses)) {
+                foreach ($addresses as $addr) {
+                    if ($addr['es_principal']) {
+                        $defaultAddress = $addr['alias'] ? $addr['alias'] : $addr['calle_numero'];
+                        break;
+                    }
+                }
+                if ($defaultAddress == 'Seleccionar Dirección' && count($addresses) > 0) {
+                    $defaultAddress = $addresses[0]['alias'] ? $addresses[0]['alias'] : $addresses[0]['calle_numero'];
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        $defaultAddress = 'Dirección';
+    }
+    ?>
     <div class="mobile-top-bar d-block d-lg-none">
         <div class="entrega-label">Entrega</div>
 
         <div class="header-row-bottom">
-            <div class="location-pill">
-                <i class="fas fa-map-marker-alt"></i>
-                <span class="location-text-content">Casa de Luis</span>
-                <i class="fas fa-chevron-down"></i>
+            <div class="dropdown location-pill" style="padding: 0;">
+                <button
+                    class="btn w-100 d-flex align-items-center justify-content-between border-0 bg-transparent shadow-none"
+                    type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="padding: 8px 15px;">
+                    <div class="d-flex align-items-center overflow-hidden">
+                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                        <span class="location-text-content text-start text-dark fw-bold text-truncate"
+                            style="max-width: 180px;">
+                            <?php echo htmlspecialchars($defaultAddress); ?>
+                        </span>
+                    </div>
+                    <i class="fas fa-chevron-down text-dark small ms-2"></i>
+                </button>
+                <ul class="dropdown-menu w-100 shadow-sm border-0 rounded-3 mt-1" aria-labelledby="dropdownMenuButton1">
+                    <?php if (count($addresses) > 0): ?>
+                        <li>
+                            <h6 class="dropdown-header small text-muted text-uppercase">Mis Direcciones</h6>
+                        </li>
+                        <?php foreach ($addresses as $addr): ?>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-2" href="#"
+                                    onclick="selectHeaderAddress(<?php echo $addr['id']; ?>); return false;">
+                                    <div>
+                                        <i class="fas fa-map-marker-alt text-muted me-2 small"></i>
+                                        <span class="fw-bold text-dark small">
+                                            <?php echo htmlspecialchars($addr['alias'] ? $addr['alias'] : substr($addr['calle_numero'], 0, 15) . '...'); ?>
+                                        </span>
+                                    </div>
+                                    <?php if ($addr['es_principal']): ?>
+                                        <span class="badge bg-light text-secondary rounded-pill"
+                                            style="font-size: 0.6rem;">Principal</span>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                        <li>
+                            <hr class="dropdown-divider my-1">
+                        </li>
+                    <?php else: ?>
+                        <li><a class="dropdown-item text-muted small" href="#">Sin direcciones guardadas</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                    <?php endif; ?>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center py-2 text-primary fw-bold small"
+                            href="front/cliente/perfil.php?section=direcciones">
+                            <i class="fas fa-plus-circle me-2"></i> Nueva Dirección
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <div class="notification-circle">
+            <div class="notification-circle" onclick="location.href='front/cliente/perfil.php?section=pedidos'">
                 <i class="fas fa-bell"></i>
                 <!-- <div class="notification-dot"></div> -->
             </div>
+            <!-- Search Icon (Mobile) -->
+            <a href="tienda.php" class="text-dark">
+                <i class="fas fa-search" style="font-size: 1.2rem;"></i>
+            </a>
         </div>
     </div>
+
+    <script>
+        function selectHeaderAddress(addressId) {
+            const formData = new FormData();
+            formData.append('action', 'set_session_address');
+            formData.append('address_id', addressId);
+
+            fetch('back/client_manager.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        console.error('Error selecting address:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 <?php endif; ?>
 
 <!-- EXISTING HEADER (Desktop Only: d-none d-lg-block) -->
 <header class="header-wrapper d-none d-lg-block">
     <nav class="navbar navbar-expand-lg header-main bg-white pb-2 pb-lg-3">
         <div class="container-fluid px-0">
-            <a class="navbar-brand me-lg-5" href="index.php">
-                <img src="front/multimedia/logo.svg" alt="Roots Logo">
+            <a class="navbar-brand me-lg-5" href="<?php echo $base_url; ?>index.php">
+                <img src="<?php echo $base_url; ?>front/multimedia/logo.svg" alt="Roots Logo">
             </a>
 
             <div class="d-flex align-items-center d-lg-none">
@@ -321,22 +436,24 @@
 
             <div class="collapse navbar-collapse mt-3 mt-lg-0" id="mainNavbar">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 main-nav-links">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="tienda.php">Categorías</a></li>
-                    <li class="nav-item"><a class="nav-link" href="iniciativas.php">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo $base_url; ?>index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo $base_url; ?>tienda.php">Categorías</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo $base_url; ?>iniciativas.php">Nosotros</a>
+                    </li>
                 </ul>
 
                 <div class="d-none d-lg-flex align-items-center w-100 justify-content-end">
-                    <form class="search-container me-4" action="tienda.php" method="GET">
+                    <form class="search-container me-4" action="<?php echo $base_url; ?>tienda.php" method="GET">
                         <input type="text" class="search-input" name="q"
                             placeholder="Busca productos sin químicos dañinos..."
                             value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
                         <button type="submit" class="search-btn-circle"><i class="fas fa-search"></i></button>
                     </form>
 
-                    <a href="front/cliente/perfil.php" class="text-decoration-none"><i
+                    <a href="<?php echo $base_url; ?>front/cliente/perfil.php" class="text-decoration-none"><i
                             class="fas fa-user header-icon"></i></a>
-                    <a href="carrito.php" class="text-decoration-none position-relative"
+                    <a href="<?php echo $base_url; ?>carrito.php" class="text-decoration-none position-relative"
                         id="cart-icon-desktop-container">
                         <i class="fas fa-shopping-bag header-icon" id="cart-icon-desktop"></i>
                         <span
@@ -352,29 +469,49 @@
 <!-- MOBILE BOTTOM NAV (Fixed Bottom) -->
 <div class="bottom-nav fixed-bottom d-flex d-lg-none">
     <?php $current_page = basename($_SERVER['PHP_SELF']); ?>
-    <a href="index.php" class="nav-item-mobile <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
+    <a href="<?php echo $base_url; ?>index.php"
+        class="nav-item-mobile <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
         <i class="fas fa-home"></i>
         <span>Home</span>
     </a>
-    <a href="tienda.php" class="nav-item-mobile <?php echo ($current_page == 'tienda.php') ? 'active' : ''; ?>">
+    <a href="<?php echo $base_url; ?>tienda.php"
+        class="nav-item-mobile <?php echo ($current_page == 'tienda.php') ? 'active' : ''; ?>">
         <i class="fas fa-th-large"></i>
         <span>Categorías</span>
     </a>
     <div class="nav-item-mobile">
-        <a href="carrito.php" class="cart-float-btn">
+        <a href="<?php echo $base_url; ?>carrito.php" class="cart-float-btn">
             <i class="fas fa-shopping-bag" id="cart-icon-mobile"></i>
             <span class="cart-badge cart-count-float" style="display: none;">0</span>
         </a>
     </div>
-    <a href="pedidos.php" class="nav-item-mobile <?php echo ($current_page == 'pedidos.php') ? 'active' : ''; ?>">
-        <i class="fas fa-file-alt"></i>
-        <span>Pedidos</span>
-    </a>
-    <a href="front/cliente/perfil.php"
-        class="nav-item-mobile <?php echo ($current_page == 'perfil.php') ? 'active' : ''; ?>">
-        <i class="far fa-user"></i>
-        <span>Perfil</span>
-    </a>
+    <!-- Pedidos Item (Conditional) -->
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="<?php echo $base_url; ?>front/cliente/perfil.php?section=pedidos"
+            class="nav-item-mobile <?php echo ($current_page == 'perfil.php' && isset($_GET['section']) && $_GET['section'] == 'pedidos') ? 'active' : ''; ?>">
+            <i class="fas fa-file-alt"></i>
+            <span>Pedidos</span>
+        </a>
+    <?php else: ?>
+        <div class="nav-item-mobile" style="opacity: 0.4; cursor: default;">
+            <i class="fas fa-file-alt"></i>
+            <span>Pedidos</span>
+        </div>
+    <?php endif; ?>
+
+    <!-- Profile Item -->
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="<?php echo $base_url; ?>front/cliente/perfil.php"
+            class="nav-item-mobile <?php echo ($current_page == 'perfil.php' && (!isset($_GET['section']) || $_GET['section'] != 'pedidos')) ? 'active' : ''; ?>">
+            <i class="far fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    <?php else: ?>
+        <a href="<?php echo $base_url; ?>login.php" class="nav-item-mobile">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    <?php endif; ?>
 </div>
 
 

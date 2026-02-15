@@ -638,15 +638,26 @@
                         }
 
                         let invoiceBtn = '';
+                        // Logic:
+                        // 1. If files exist -> Show Download Buttons (Force Download)
+                        // 2. If requested but pending -> Show Pending Icon
+                        // 3. If not requested -> Show "Solicitar Factura" button instead of "Ver" (User requested replacement)
+
                         if (order.invoice_pdf && order.invoice_xml) {
                             invoiceBtn = `
-                                <a href="../../${order.invoice_pdf}" target="_blank" class="btn btn-sm btn-outline-danger border-0" title="PDF"><i class="fas fa-file-pdf"></i></a>
-                                <a href="../../${order.invoice_xml}" target="_blank" class="btn btn-sm btn-outline-primary border-0" title="XML"><i class="fas fa-file-code"></i></a>
+                                <a href="../../${order.invoice_pdf}" download class="btn btn-sm btn-outline-danger border-0" title="Descargar PDF"><i class="fas fa-file-pdf"></i></a>
+                                <a href="../../${order.invoice_xml}" download class="btn btn-sm btn-outline-primary border-0" title="Descargar XML"><i class="fas fa-file-code"></i></a>
                              `;
                         } else if (order.solicita_factura == 1) {
                             invoiceBtn = `<button class="btn btn-sm btn-outline-secondary border-0" disabled title="Factura Solicitada"><i class="fas fa-clock"></i></button>`;
                         } else {
-                            invoiceBtn = `<button class="btn btn-sm btn-outline-success border-0" onclick="requestInvoice(${order.id})" title="Solicitar Factura"><i class="fas fa-file-invoice"></i></button>`;
+                            // HERE: User wants "Solicitar Factura" button primarily.
+                            // We can keep the "Ver" button for details, but user asked "en vez del boton verde en detalles pon un boton. que diga solicitar factura"
+                            // The "Ver" button was: <button class="btn btn-sm btn-outline-secondary rounded-pill ms-1" onclick="showOrderDetails(${index})">Ver</button>
+                            // I will replace the "Ver" button with the "Solicitar Factura" button in the main row.
+                            // And maybe keep a small icon for details if needed, or just follow instruction to replace.
+                            // Let's replace the "Ver" button with "Solicitar Factura" and keep a small 'eye' icon for details just in case they need to see what they bought.
+                            invoiceBtn = `<button class="btn btn-sm btn-success rounded-pill" onclick="requestInvoice(${order.id})">Solicitar Factura</button>`;
                         }
 
                         const date = new Date(order.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -660,7 +671,11 @@
                             <td>${shippingBadge}</td>
                             <td class="text-end">
                                 ${invoiceBtn}
-                                <button class="btn btn-sm btn-outline-secondary rounded-pill ms-1" onclick="showOrderDetails(${index})">Ver</button>
+                                <a href="../admin/print_order.php?id=${order.id}" target="_blank" class="btn btn-sm btn-outline-dark border-0 ms-1" title="Ver Recibo"><i class="fas fa-receipt"></i></a>
+                                ${(!order.invoice_pdf && order.solicita_factura != 1) ?
+                                `<button class="btn btn-sm btn-outline-secondary border-0 ms-1" onclick="showOrderDetails(${index})" title="Ver Detalles"><i class="fas fa-eye"></i></button>` :
+                                `<button class="btn btn-sm btn-outline-secondary border-0 ms-1" onclick="showOrderDetails(${index})" title="Ver Detalles"><i class="fas fa-eye"></i></button>`
+                            }
                             </td>
                         </tr>
                     `;

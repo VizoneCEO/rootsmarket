@@ -142,7 +142,12 @@
                                 <td>${order.rfc || '<span class="text-muted">-</span>'}</td>
                                 <td class="fw-bold">$${parseFloat(order.total).toFixed(2)}</td>
                                 <td>${statusBadge}</td>
-                                <td class="text-end">${actionBtn}</td>
+                                <td class="text-end">
+                                    <a href="print_order.php?id=${order.id}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill me-1" title="Ver Ticket">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    ${actionBtn}
+                                </td>
                             </tr>
                         `;
                         container.innerHTML += row;

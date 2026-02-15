@@ -78,9 +78,14 @@
                             <td class="text-end fw-bold">$${parseFloat(order.total).toFixed(2)}</td>
                             <td>${date}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-info" onclick="showOrderDetails(${order.id})">
-                                    <i class="fas fa-eye me-1"></i> Ver Detalle
-                                </button>
+                                <div class="btn-group" role="group">
+                                    <a href="print_order.php?id=${order.id}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir Ticket">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-info" onclick="showOrderDetails(${order.id})">
+                                        <i class="fas fa-eye me-1"></i> Ver
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;

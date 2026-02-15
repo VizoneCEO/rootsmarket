@@ -76,6 +76,17 @@ if (array_key_exists($requestedPage, $allowedPages)) {
             padding: 2rem;
         }
 
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+
         .sidebar .nav-link {
             color: #e0e0e0;
             font-size: 1.1rem;

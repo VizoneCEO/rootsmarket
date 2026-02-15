@@ -2,7 +2,7 @@
 $currentPage = $_GET['page'] ?? 'dashboard';
 ?>
 
-<nav class="sidebar">
+<nav class="sidebar d-none d-md-block">
     <div class="sidebar-header">
         <a href="../../index.php" class="d-flex align-items-center text-white text-decoration-none">
             <img src="../front/multimedia/logo.svg" alt="Roots Logo"
@@ -31,6 +31,12 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     <i class="fas fa-boxes-stacked me-2"></i> Control de Stock
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($currentPage === 'descuentos') ? 'active' : ''; ?>"
+                    href="perfilAdmin.php?page=descuentos">
+                    <i class="fas fa-tags me-2"></i> Control de Descuentos
+                </a>
+            </li>
         <?php endif; ?>
 
         <?php if ($_SESSION['user_role'] === 'administrador' || $_SESSION['user_role'] === 'vendedor'): ?>
@@ -40,12 +46,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     <i class="fas fa-chart-line me-2"></i> Control de Ventas
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link <?php echo ($currentPage === 'descuentos') ? 'active' : ''; ?>"
-                    href="perfilAdmin.php?page=descuentos">
-                    <i class="fas fa-tags me-2"></i> Control de Descuentos
-                </a>
-            </li>
+
             <li class="nav-item">
                 <a class="nav-link <?php echo ($currentPage === 'ventas_asignadas') ? 'active' : ''; ?>"
                     href="perfilAdmin.php?page=ventas_asignadas">

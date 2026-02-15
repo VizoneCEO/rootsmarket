@@ -772,7 +772,13 @@ if (!$producto) {
                     Añadir al carrito
                 </button>
             </div>
-            <button class="btn-buy-now">Comprar ahora</button>
+            <button class="btn-buy-now" onclick="buyNow(
+                        <?php echo $producto['id']; ?>,
+                        '<?php echo htmlspecialchars($producto['nombre']); ?>',
+                        <?php echo $producto['precio_oferta'] ?: $producto['precio_venta']; ?>,
+                        '<?php echo htmlspecialchars(ltrim($imagenes[0], '/')); ?>',
+                        document.getElementById('qtyInput').value
+                    )">Comprar ahora</button>
 
             <div class="shipping-info">
                 <div class="shipping-item">
@@ -877,5 +883,10 @@ if (!$producto) {
             '<?php echo htmlspecialchars(ltrim($imagenes[0], '/')); ?>',
             qty
         );
+    }
+
+    function buyNow(id, name, price, image, quantity) {
+        addToCart(id, name, price, image, quantity);
+        window.location.href = 'carrito.php';
     }
 </script>

@@ -3,13 +3,15 @@ session_start();
 require_once __DIR__ . '/conection/db.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+// Check if user is logged in, EXCEPT for create_order
+$action = $_POST['action'] ?? '';
+
+if (!isset($_SESSION['user_id']) && $action !== 'create_order') {
     echo json_encode(['status' => 'error', 'message' => 'Usuario no autenticado']);
     exit();
 }
 
-$action = $_POST['action'] ?? '';
-$userId = $_SESSION['user_id'];
+$userId = $_SESSION['user_id'] ?? null;
 
 if ($action === 'update_personal') {
     // Collect data
@@ -190,6 +192,47 @@ if ($action === 'update_personal') {
 
 
 } elseif ($action === 'create_order') {
+
+    // --- GUEST LOGIC ---
+    if (!$userId) {
+        $email = trim($_POST['contact_email'] ?? '');
+        $full_name = trim($_POST['contact_nombre'] ?? 'Invitado');
+        $telefono = trim($_POST['contact_telefono'] ?? '');
+
+        if (empty($email)) {
+            echo json_encode(['status' => 'error', 'message' => 'El correo es obligatorio para comprar']);
+            exit;
+        }
+
+        // Check if user exists
+        $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
+        $stmt->execute([$email]);
+        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingUser) {
+            $userId = $existingUser['id'];
+            // DO NOT login existing user automatically
+        } else {
+            // Create new user (Role 5 = Cliente)
+            $tempPass = bin2hex(random_bytes(8));
+            $hash = password_hash($tempPass, PASSWORD_DEFAULT);
+
+            $parts = explode(' ', $full_name, 2);
+            $firstName = $parts[0];
+            $lastName = $parts[1] ?? '';
+
+            $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, apellido_paterno, email, password, telefono, rol_id, fecha_registro, estatus) VALUES (?, ?, ?, ?, ?, 5, NOW(), 'activo')");
+            $stmt->execute([$firstName, $lastName, $email, $hash, $telefono]);
+            $userId = $pdo->lastInsertId();
+
+            // Auto login new user
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_role'] = 'cliente';
+            $_SESSION['user_name'] = $firstName;
+        }
+    }
+    // --- END GUEST LOGIC ---
+
     $cart = json_decode($_POST['cart'] ?? '[]', true);
     $shipping = json_decode($_POST['shipping'] ?? '{}', true);
     $total = $_POST['total'] ?? 0;
@@ -202,11 +245,19 @@ if ($action === 'update_personal') {
     try {
         $pdo->beginTransaction();
 
-        // 1. Create Order
-        $stmt = $pdo->prepare("INSERT INTO pedidos (user_id, total, estatus, estatus_envio, direccion_envio, contacto_info, descuento_codigo, descuento_monto) VALUES (?, ?, 'pagado', 'en_preparacion', ?, ?, ?, ?)");
+        // 1. Determine Status and Payment Method
+        $paymentMethod = $_POST['payment_method'] ?? 'card'; // Default to card if missing
+        $status = ($paymentMethod === 'cash') ? 'pendiente_pago' : 'pagado';
+
+        // Map frontend values to database values if needed (e.g., 'cash' -> 'Efectivo')
+        $dbPaymentMethod = ($paymentMethod === 'cash') ? 'Efectivo' : 'Tarjeta';
+
+        // 2. Create Order
+        $stmt = $pdo->prepare("INSERT INTO pedidos (user_id, total, estatus, estatus_envio, direccion_envio, contacto_info, descuento_codigo, descuento_monto, fecha_entrega, hora_entrega, costo_envio, metodo_pago) VALUES (?, ?, ?, 'en_preparacion', ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $userId,
             $total,
+            $status,
             json_encode($shipping),
             json_encode([
                 'nombre' => $_POST['contact_nombre'] ?? '',
@@ -214,7 +265,11 @@ if ($action === 'update_personal') {
                 'email' => $_POST['contact_email'] ?? ''
             ]),
             $_POST['discount_code'] ?? null,
-            $_POST['discount_amount'] ?? 0.00
+            $_POST['discount_amount'] ?? 0.00,
+            $_POST['delivery_date'] ?? null,
+            $_POST['delivery_time'] ?? null,
+            $_POST['shipping_cost'] ?? 0.00,
+            $dbPaymentMethod
         ]);
         $orderId = $pdo->lastInsertId();
 
@@ -229,6 +284,21 @@ if ($action === 'update_personal') {
                 $item['quantity'],
                 $item['price'],
                 $item['image'] ?? null
+            ]);
+        }
+
+        // 3. Add Reusable Bags if applicable
+        $bagQuantity = isset($_POST['bag_quantity']) ? intval($_POST['bag_quantity']) : 0;
+        if ($bagQuantity > 0) {
+            $bagPrice = 13.00;
+            // Product ID 471 created for "Bolsa Reutilizable"
+            $stmtDetail->execute([
+                $orderId,
+                471,
+                'Bolsa Reutilizable',
+                $bagQuantity,
+                $bagPrice,
+                'front/multimedia/productos.png' // Placeholder image
             ]);
         }
 
@@ -273,6 +343,26 @@ if ($action === 'update_personal') {
             echo json_encode(['status' => 'success', 'message' => 'Solicitud de factura enviada']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Pedido no encontrado']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+
+} elseif ($action === 'set_session_address') {
+    $addressId = $_POST['address_id'] ?? 0;
+
+    // Verify user owns this address to prevent IDOR
+    try {
+        $stmt = $pdo->prepare("SELECT id, alias, calle_numero FROM direcciones_envio WHERE id = ? AND user_id = ?");
+        $stmt->execute([$addressId, $userId]);
+        $address = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($address) {
+            $_SESSION['selected_address_id'] = $address['id'];
+            $_SESSION['selected_address_label'] = $address['alias'] ? $address['alias'] : $address['calle_numero'];
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Dirección no válida']);
         }
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);

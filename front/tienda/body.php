@@ -419,23 +419,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
     <!-- Mobile Sticky Header -->
     <div class="mobile-cat-header">
-        <!-- Row 1: Address + Bell -->
-        <div class="mobile-header-row-1">
-            <div class="entrega-label-dark">Entrega</div>
-            <div class="mobile-header-row-1-content">
-                <div class="location-pill-mobile">
-                    <i class="fas fa-map-marker-alt" style="color: #4EAE3E; margin-right: 8px;"></i>
-                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1;">Casa de
-                        Luis</span>
-                    <i class="fas fa-chevron-down" style="color: #333; margin-left: 8px; font-size: 0.8rem;"></i>
-                </div>
-                <!-- Notif Bell -->
-                <div
-                    style="width: 45px; height: 45px; border-radius: 50%; background: #f8f8f8; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; flex-shrink: 0;">
-                    <i class="fas fa-bell" style="color: #4EAE3E; font-size: 1.2rem;"></i>
-                </div>
-            </div>
-        </div>
+        <!-- Row 1: Address + Bell REMOVED (Duplicate) -->
 
         <!-- Row 2: Filter Buttons (Mobile) - MOVED UP -->
         <div class="d-flex gap-2 mb-3 overflow-auto pb-1 no-scrollbar" style="white-space: nowrap;">
@@ -513,9 +497,11 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                             <div class="cat-mobile-name"><?php echo htmlspecialchars($cat['nombre']); ?></div>
                             <div class="cat-mobile-circle" style="background-color: <?php echo $color_bg; ?>;">
                                 <?php if (!empty($cat['icono_url'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($cat['icono_url'], '/')); ?>" alt="Icon">
+                                    <img src="<?php echo htmlspecialchars(ltrim($cat['icono_url'], '/')); ?>"
+                                        alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
                                 <?php elseif (!empty($cat['imagen_url'])): ?>
-                                    <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>" alt="Cat">
+                                    <img src="<?php echo htmlspecialchars(ltrim($cat['imagen_url'], '/')); ?>"
+                                        alt="<?php echo htmlspecialchars($cat['nombre']); ?>">
                                 <?php else: ?>
                                     <i class="fas fa-leaf" style="font-size: 1.5rem; color: #599332;"></i>
                                 <?php endif; ?>

@@ -1,3 +1,8 @@
+<?php
+// --- SEGURIDAD: VERIFICAR SESIÓN ---
+$allowed_roles = ['administrador', 'vendedor'];
+require_once dirname(__DIR__, 2) . '/back/check_admin_session.php';
+?>
 <div class="container-fluid">
     <h1 class="h2 mb-4">Control de Ventas - En Preparación</h1>
 
@@ -14,6 +19,7 @@
                             <th>Cliente</th>
                             <th>Fecha</th>
                             <th>Productos</th>
+                            <th class="text-center">Pago</th>
                             <th class="text-end">Total</th>
                             <th class="text-center">Estado Envío</th>
                             <th class="text-center">Acciones</th>
@@ -26,6 +32,8 @@
             </div>
         </div>
     </div>
+
+
     <script>
         let currentOrderIdForAssignment = null;
 
@@ -51,6 +59,20 @@
                         data.data.forEach((order, index) => {
                             const date = new Date(order.fecha).toLocaleDateString('es-ES');
 
+                            // Payment Method Icon/Text
+                            let payIcon = '<i class="fas fa-credit-card text-primary me-1"></i> Tarjeta';
+                            if (order.metodo_pago && order.metodo_pago.toLowerCase().includes('efectivo')) {
+                                payIcon = '<i class="fas fa-money-bill-wave text-success me-1"></i> Efectivo';
+                            }
+
+                            // Payment Status Badge
+                            let payStatus = '<span class="badge bg-secondary">Pendiente</span>';
+                            if (order.estatus === 'pagado') {
+                                payStatus = '<span class="badge bg-success">Pagado</span>';
+                            } else if (order.estatus === 'cancelado') {
+                                payStatus = '<span class="badge bg-danger">Cancelado</span>';
+                            }
+
                             const html = `
                         <tr>
                             <td class="fw-bold">#ORD-${order.id}</td>
@@ -60,9 +82,16 @@
                             </td>
                             <td>${date}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-info" onclick="showOrderDetails(${index})">
-                                    <i class="fas fa-eye me-1"></i> Ver Detalle
+                                <button class="btn btn-sm btn-outline-info" onclick="showOrderDetails(${index})" title="Ver Detalle">
+                                    <i class="fas fa-eye"></i>
                                 </button>
+                                <a href="print_order.php?id=${order.id}" target="_blank" class="btn btn-sm btn-outline-secondary ms-1" title="Imprimir Ticket">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </td>
+                            <td class="text-center small">
+                                <div>${payIcon}</div>
+                                <div class="mt-1">${payStatus}</div>
                             </td>
                             <td class="text-end fw-bold">$${parseFloat(order.total).toFixed(2)}</td>
                             <td class="text-center"><span class="badge bg-warning text-dark">En Preparación</span></td>
@@ -82,11 +111,21 @@
                 .catch(err => console.error('Error loading orders:', err));
         }
 
+
+
         function showOrderDetails(index) {
             const order = window.salesOrders[index];
 
             document.getElementById('modalOrderId').textContent = `#ORD-${order.id}`;
             document.getElementById('modalOrderDate').textContent = new Date(order.fecha).toLocaleDateString('es-ES');
+
+            // Payment Parsing for Modal
+            let payMethod = order.metodo_pago || 'Tarjeta';
+            let payStatus = order.estatus || 'pagado';
+            document.getElementById('modalPaymentInfo').innerHTML = `
+                <div class="mb-1"><strong>Método:</strong> ${payMethod}</div>
+                <div><strong>Estado:</strong> <span class="badge ${payStatus === 'pagado' ? 'bg-success' : 'bg-warning text-dark'}">${payStatus.toUpperCase()}</span></div>
+            `;
 
             // Address Parsing
             let addr = {};
@@ -193,6 +232,11 @@
                         <div class="col-md-6 text-md-end">
                             <label class="text-muted small fw-bold">TOTAL</label>
                             <div id="modalOrderTotal" class="fs-4 fw-bold text-success"></div>
+                        </div>
+                        <div class="col-12 mt-3 border-top pt-2">
+                            <div class="d-flex justify-content-between align-items-center" id="modalPaymentInfo">
+                                <!-- Payment Info injected via JS -->
+                            </div>
                         </div>
                     </div>
 
