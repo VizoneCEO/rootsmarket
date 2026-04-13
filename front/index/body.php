@@ -166,6 +166,7 @@ try {
         z-index: 2;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         max-width: 80%;
+        margin: 0 auto;
     }
 
     .hero-subtitle {
@@ -652,13 +653,15 @@ try {
 
         <h1 class="hero-title text-white text-uppercase"
             style="font-size: 4rem; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            COMPRA<br>CON PROPÓSITO
+            TU SÚPER QUE SE PREOCUPA POR TI
         </h1>
+        <!-- <h3 class="hero-subtitle-mobile text-white mb-3">POR TU SÚPER QUE SE PREOCUPA POR TI</h3> -->
+
 
         <p class="hero-subtitle text-white mt-3"
             style="font-size: 1.2rem; max-width: 500px; text-align: left; font-weight: 500;">
-            Todo lo que necesitas para tu día a día, libre de químicos dañinos.
-            Saludable, confiable y al alcance de un clic.
+            Todo lo que necesitas para tu día a día, libre de químicos dañinos. Saludable, confiable y al alcance de un
+            clic.
         </p>
 
         <a href="tienda.php" class="btn btn-primary rounded-pill px-5 py-3 mt-4 fw-bold" style="font-size: 1.1rem;">
@@ -684,9 +687,11 @@ try {
 <div class="hero-section-mobile d-flex d-lg-none flex-column justify-content-center text-center px-4">
     <div class="hero-mobile-overlay"></div>
     <div style="z-index: 2;">
-        <h1 class="hero-title-mobile text-white mb-3">COMPRA CON<br>PROPÓSITO</h1>
+        <h1 class="hero-title-mobile text-white mb-3">TU SÚPER QUE SE PREOCUPA POR TI</h1>
+        <!-- <h3 class="hero-subtitle-mobile text-white mb-3">POR TU SÚPER QUE SE PREOCUPA POR TI</h3> -->
         <p class="text-white mb-4" style="font-size: 1rem; opacity: 0.9;">
-            Libre de químicos dañinos.<br>Saludable y confiable.
+            Todo lo que necesitas para tu día a día, libre de químicos dañinos. Saludable, confiable y al alcance de un
+            clic.
         </p>
         <a href="tienda.php" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Empieza tu súper</a>
     </div>
@@ -1175,7 +1180,7 @@ try {
 </div>
 
 <!-- ================= MOBILE TABBED PRODUCTS SECTION ================= -->
-<div class="d-lg-none py-4 mb-5" style="background-color: #fff;">
+<div class="d-lg-none py-4 mb-0" style="background-color: #fff;">
     <div class="container">
         <!-- Tabs Nav -->
         <ul class="nav nav-tabs border-0 justify-content-between mb-4" id="mobileProductTabs" role="tablist">

@@ -216,3 +216,18 @@ footer {
     font-size: 0.9rem;
     text-transform: uppercase;
 }
+
+/* Fix for Mobile Overflow */
+@media (max-width: 991px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        padding-bottom: 70px;
+        /* Reserved for fixed bottom nav */
+    }
+}

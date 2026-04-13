@@ -291,10 +291,10 @@ if ($action === 'update_personal') {
         $bagQuantity = isset($_POST['bag_quantity']) ? intval($_POST['bag_quantity']) : 0;
         if ($bagQuantity > 0) {
             $bagPrice = 13.00;
-            // Product ID 471 created for "Bolsa Reutilizable"
+            // Product ID 10000 created for "Bolsa Reutilizable"
             $stmtDetail->execute([
                 $orderId,
-                471,
+                10000, // ID actualizado para producción
                 'Bolsa Reutilizable',
                 $bagQuantity,
                 $bagPrice,
@@ -364,6 +364,26 @@ if ($action === 'update_personal') {
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Dirección no válida']);
         }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+
+} elseif ($action === 'get_taken_slots') {
+    $date = $_POST['date'] ?? '';
+
+    if (empty($date)) {
+        echo json_encode(['status' => 'error', 'message' => 'Fecha requerida']);
+        exit;
+    }
+
+    try {
+        // Fetch taken times for the given date
+        // We only care about orders that are NOT cancelled
+        $stmt = $pdo->prepare("SELECT hora_entrega FROM pedidos WHERE fecha_entrega = ? AND estatus != 'cancelado'");
+        $stmt->execute([$date]);
+        $takenSlots = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        echo json_encode(['status' => 'success', 'data' => $takenSlots]);
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }

@@ -2,6 +2,14 @@
 let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
 
 function addToCart(id, name, price, image, quantity = 1) {
+    // 1. Sincronizar SIEMPRE con localStorage antes de modificar
+    // Esto evita el bug donde se elimino un item en otra pagina/tab pero este JS tiene una version vieja en memoria
+    cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
+
+    // Ensure ID is consistent type (int)
+    id = parseInt(id);
+
+    // Buscar en la lista ACTUALIZADA
     const existingItem = cart.find(item => item.id === id);
 
     if (existingItem) {
@@ -16,7 +24,8 @@ function addToCart(id, name, price, image, quantity = 1) {
         });
     }
 
-    saveCart();
+    // Guardar y Actualizar UI
+    localStorage.setItem('roots_cart', JSON.stringify(cart));
     updateCartCounter();
     triggerCartAnimation(); // <--- AQUÍ ESTÁ LA MAGIA
 

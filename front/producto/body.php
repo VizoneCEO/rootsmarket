@@ -326,7 +326,6 @@ if (!$producto) {
         align-items: center;
         justify-content: center;
         /* Background texture or image if needed */
-        background-image: url('front/multimedia/fondo_natural.png');
         /* If exists, else color */
         background-size: cover;
     }

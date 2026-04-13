@@ -522,7 +522,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
             </div>
 
             <!-- Render Products Grid Mobile -->
-            <div class="row g-2 px-2">
+            <div class="row g-2 px-2" id="product-grid-mobile">
                 <?php foreach ($productos as $prod): ?>
                     <div class="col-6">
                         <div class="product-card-figma" style="margin-bottom: 1rem;">
@@ -569,23 +569,21 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
                 <?php endforeach; ?>
             </div>
             <div style="height: 40px;"></div>
-            <?php if ($total_productos > $limit_actual): ?>
-                <div class="text-center mb-5 pb-5">
-                    <?php $mostrando = min($limit_actual, $total_productos); ?>
-                    <p class="text-muted mb-3 small">Mostrando <?php echo $mostrando; ?> de <?php echo $total_productos; ?>
-                        productos</p>
+            <div style="height: 40px;"></div>
 
-                    <?php
-                    // Construir URL para cargar más
-                    $params = $_GET;
-                    $params['ver_hasta'] = $limit_actual + 50;
-                    $new_query_string = http_build_query($params);
-                    ?>
-                    <a href="?<?php echo $new_query_string; ?>" class="btn btn-outline-success rounded-pill px-4">
-                        Cargar más productos
-                    </a>
-                </div>
-            <?php endif; ?>
+            <div class="text-center mb-5 pb-5" id="load-more-container-mobile"
+                style="<?php echo ($total_productos <= $limit_actual) ? 'display:none;' : ''; ?>">
+                <p class="text-muted mb-3 small" id="counter-text-mobile">
+                    Mostrando <?php echo min($limit_actual, $total_productos); ?> de <?php echo $total_productos; ?>
+                    productos
+                </p>
+
+                <button class="btn btn-outline-success rounded-pill px-4 btn-load-more-ajax"
+                    data-target="#product-grid-mobile" data-counter="#counter-text-mobile">
+                    Cargar más productos
+                </button>
+            </div>
+
             <div style="height: 40px;"></div>
         <?php endif; ?>
     </div>
@@ -642,7 +640,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4" id="product-grid-desktop">
         <?php if (!empty($productos)): ?>
             <?php foreach ($productos as $prod): ?>
                 <div class="col-6 col-md-4 col-lg-3">
@@ -701,29 +699,111 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
     </div>
 
     <?php if ($total_productos > $limit_actual): ?>
-        <div class="text-center mt-5 mb-5">
-            <?php $mostrando = min($limit_actual, $total_productos); ?>
-            <p class="text-muted mb-3 small">Mostrando <?php echo $mostrando; ?> de <?php echo $total_productos; ?>
-                productos</p>
+        <div class="text-center mt-5 mb-5" id="load-more-container-desktop">
+            <p class="text-muted mb-3 small" id="counter-text-desktop">
+                Mostrando <?php echo min($limit_actual, $total_productos); ?> de <?php echo $total_productos; ?> productos
+            </p>
 
             <div class="progress mb-4 mx-auto" style="height: 4px; max-width: 200px; background-color: #e9ecef;">
-                <div class="progress-bar bg-dark" role="progressbar"
-                    style="width: <?php echo ($mostrando / $total_productos) * 100; ?>%;"></div>
+                <div class="progress-bar bg-dark" role="progressbar" id="progress-bar-desktop"
+                    style="width: <?php echo (min($limit_actual, $total_productos) / $total_productos) * 100; ?>%;"></div>
             </div>
 
-            <?php
-            // Construir URL para cargar más
-            $params = $_GET;
-            $params['ver_hasta'] = $limit_actual + 50;
-            $new_query_string = http_build_query($params);
-            ?>
-            <a href="?<?php echo $new_query_string; ?>" class="btn-load-more">
+            <button class="btn-load-more btn-load-more-ajax" data-target="#product-grid-desktop"
+                data-counter="#counter-text-desktop" data-progress="#progress-bar-desktop">
                 Cargar más productos
-            </a>
+            </button>
         </div>
     <?php endif; ?>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadMoreBtns = document.querySelectorAll('.btn-load-more-ajax');
+
+        // Estado inicial compartido 
+        // (Nota: Si se usa movil y desktop a la vez al redimensionar, podría haber desincronización visual, 
+        // pero funcionalmente OK para el usuario promedio)
+        let offset = <?php echo $limit_actual; ?>; // Empezamos después de los cargados por PHP
+        const limit = 50;
+        const totalProductos = <?php echo $total_productos; ?>;
+
+        // Parámetros de filtro actuales
+        const categoria = "<?php echo $categoria_id; ?>";
+        const busqueda = "<?php echo $busqueda ?? ''; ?>";
+        const filtro = "<?php echo $filtro_especial ?? ''; ?>";
+
+        loadMoreBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const targetGridId = this.dataset.target;
+                const targetGrid = document.querySelector(targetGridId);
+                const counterSelector = this.dataset.counter;
+                const progressSelector = this.dataset.progress; // Solo desktop usa barra
+                const selfBtn = this;
+
+                // Loading State
+                const originalText = selfBtn.innerText;
+                selfBtn.innerText = 'Cargando...';
+                selfBtn.disabled = true;
+
+                // Fetch AJAX
+                const url = `back/ajax_products.php?offset=${offset}&limit=${limit}&categoria=${categoria}&q=${encodeURIComponent(busqueda)}&filter=${filtro}`;
+
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        if (html.trim() !== '') {
+                            // Insertar HTML
+                            targetGrid.insertAdjacentHTML('beforeend', html);
+
+                            // Actualizar Offset
+                            offset += limit;
+
+                            // Actualizar Contadores UI
+                            const currentShown = Math.min(offset, totalProductos);
+
+                            // Actualizar texto "Mostrando X de Y"
+                            if (counterSelector) {
+                                document.querySelectorAll(counterSelector).forEach(el => {
+                                    el.innerText = `Mostrando ${currentShown} de ${totalProductos} productos`;
+                                });
+                            }
+
+                            // Actualizar Barra (Solo desktop)
+                            if (progressSelector) {
+                                const progressBar = document.querySelector(progressSelector);
+                                if (progressBar) {
+                                    const percent = (currentShown / totalProductos) * 100;
+                                    progressBar.style.width = `${percent}%`;
+                                }
+                            }
+
+                            // Ocultar botón si llegamos al final
+                            if (offset >= totalProductos) {
+                                selfBtn.parentElement.style.display = 'none';
+
+                                // También ocultar el otro botón (móvil/desktop mirror)
+                                document.querySelectorAll('#load-more-container-mobile, #load-more-container-desktop').forEach(el => el.style.display = 'none');
+                            }
+
+                        } else {
+                            // No hay más datos
+                            selfBtn.parentElement.style.display = 'none';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error loading products:', err);
+                        alert('Error al cargar más productos.');
+                    })
+                    .finally(() => {
+                        selfBtn.innerText = originalText;
+                        selfBtn.disabled = false;
+                    });
+            });
+        });
+    });
+</script>
 
 <script>
     let timeout = null;

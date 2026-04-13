@@ -164,7 +164,7 @@
     </button>
 </div>
 <div style="position: fixed; bottom: 10px; right: 20px; z-index: 1000;">
-    <a href="https://wa.me/524422503383" target="_blank"
+    <a href="https://wa.me/5215554749094" target="_blank"
         class="btn rounded-circle d-flex justify-content-center align-items-center"
         style="background-color: #25d366; color: white; width: 60px; height: 60px;">
         <i class="fab fa-whatsapp fs-4"></i>

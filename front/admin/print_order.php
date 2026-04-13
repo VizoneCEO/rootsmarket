@@ -138,8 +138,11 @@ $qr_url = "https://quickchart.io/qr?text=" . urlencode($qr_data) . "&size=150";
                     <?php echo str_pad($order_id, 6, '0', STR_PAD_LEFT); ?>
                 </h2>
                 <div class="text-muted">
-                    <?php echo date('d/m/Y H:i', strtotime($order['fecha'])); ?>
-                </div>
+    <?php echo date('d/m/Y H:i', strtotime($order['fecha'])); ?>
+</div>
+<div class="text-muted">
+    Entrega: <?php echo date('d/m/Y', strtotime($order['fecha_entrega'])); ?> <?php echo htmlspecialchars($order['hora_entrega']); ?>
+</div>
             </div>
         </div>
 

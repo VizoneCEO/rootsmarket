@@ -7,7 +7,7 @@ require_once(__DIR__ . '/conection/db.php');
 // --- VERIFICACIÓN DE SEGURIDAD ---
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') {
     $_SESSION['error_message'] = "Acceso denegado. No tienes permisos para esta acción.";
-    header('Location: /front/login.php'); // O a una página de error 403
+    header('Location: ../login.php'); // O a una página de error 403
     exit();
 }
 
@@ -90,6 +90,6 @@ if (isset($_GET['action'])) {
 }
 
 // Redirige siempre de vuelta a la página de control de usuarios.
-header('Location: /front/admin/perfilAdmin.php?page=controlUsuarios');
+header('Location: ../front/admin/perfilAdmin.php?page=usuarios');
 exit();
 ?>

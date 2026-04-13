@@ -149,7 +149,7 @@
                     <a href="#" class="profile-link" onclick="showSection('facturacion', this)">Facturación</a>
                     <a href="#" class="profile-link" onclick="showSection('pedidos', this)">Mis Pedidos</a>
                     <a href="#" class="profile-link" onclick="showSection('direcciones', this)">Mis Direcciones</a>
-                    <a href="#" class="profile-link" onclick="showSection('progreso', this)">Mi Progreso</a>
+                    <!-- <a href="#" class="profile-link" onclick="showSection('progreso', this)">Mi Progreso</a> -->
                     <a href="#" class="profile-link" onclick="showSection('ayuda', this)">Ayuda</a>
                     <div class="border-top mt-3 pt-3">
                         <a href="../../back/login/aut.php?action=logout" class="profile-link text-danger">Salir</a>
@@ -316,33 +316,28 @@
 
                     <!-- 3. MI PROGRESO -->
                     <div id="section-progreso" class="profile-section" style="display: none;">
+                        <!-- MODULE DISABLED BY USER REQUEST
                         <h2 class="fw-bold mb-0">Hola, <?php echo htmlspecialchars($user['nombre']); ?></h2>
                         <h3 class="fw-bold mb-5">¡Conoce tu progreso!</h3>
 
-                        <!-- Raíces Verdes -->
                         <div class="mb-5">
                             <h6 class="fw-bold text-muted mb-2">Raíces Verdes</h6>
                             <div class="progress-track">
-                                <!-- Fill width matches points -->
                                 <div class="progress-fill" style="width: 35%;"></div>
 
-                                <!-- Node 1 -->
                                 <div class="progress-node active" style="left: 35%;">
                                     <div class="current-badge">Tu impacto verde</div>
                                     <div class="node-label-bottom fw-bold text-success">269 Puntos</div>
                                 </div>
 
-                                <!-- Node 2 -->
                                 <div class="progress-node" style="left: 55%;">
                                     <div class="node-label-bottom">500 Puntos</div>
                                 </div>
 
-                                <!-- Node 3 -->
                                 <div class="progress-node" style="left: 75%;">
                                     <div class="node-label-bottom">750 Puntos</div>
                                 </div>
 
-                                <!-- Node 4 (Big Tree) -->
                                 <div class="progress-node"
                                     style="left: 95%; width: 50px; height: 50px; background-color: #D3D3D3;">
                                     <div class="node-label-bottom">1 Árbol</div>
@@ -350,14 +345,11 @@
                             </div>
                         </div>
 
-                        <!-- Cero Basura -->
                         <div class="mb-5">
                             <h6 class="fw-bold text-muted mb-2">Cero Basura</h6>
                             <div class="progress-track">
-                                <!-- Fill width matches points -->
                                 <div class="progress-fill" style="width: 18%;"></div>
 
-                                <!-- Node 1 -->
                                 <div class="progress-node active" style="left: 18%;">
                                     <div class="current-badge"
                                         style="background-color: #E67E22; border-color: #E67E22 transparent transparent transparent;">
@@ -365,22 +357,18 @@
                                     <div class="node-label-bottom fw-bold text-success">180 Puntos</div>
                                 </div>
 
-                                <!-- Node 2 -->
                                 <div class="progress-node" style="left: 25%;">
                                     <div class="node-label-bottom">250 Puntos</div>
                                 </div>
 
-                                <!-- Node 3 -->
                                 <div class="progress-node" style="left: 50%;">
                                     <div class="node-label-bottom">500 Puntos</div>
                                 </div>
 
-                                <!-- Node 4 -->
                                 <div class="progress-node" style="left: 75%;">
                                     <div class="node-label-bottom">750 Puntos</div>
                                 </div>
 
-                                <!-- Node 5 (Finish) -->
                                 <div class="progress-node"
                                     style="left: 95%; width: 50px; height: 50px; background-color: #D3D3D3;">
                                     <div class="node-label-bottom">1000 Puntos</div>
@@ -391,6 +379,7 @@
                         <div class="text-center mt-5">
                             <a href="tienda.php" class="btn-save-custom text-decoration-none">Compra con propósito</a>
                         </div>
+                        -->
                     </div>
 
                     <!-- 4. MIS PEDIDOS -->

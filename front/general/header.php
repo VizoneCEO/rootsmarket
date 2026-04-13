@@ -515,12 +515,14 @@ if (!isset($base_url)) {
 </div>
 
 
-<div class="floating-btns-mobile-adjust" style="position: fixed; bottom: 10px; left: 20px; z-index: 1000;">
+<div class="floating-btns-mobile-adjust d-none d-lg-block"
+    style="position: fixed; bottom: 10px; left: 20px; z-index: 1000;">
     <button class="btn rounded-pill d-flex align-items-center px-3 py-2" style="background-color:#5a9a4d; color:white;"
         data-bs-toggle="modal" data-bs-target="#puntosModal"><i class="fas fa-gift me-2"></i> Tus puntos</button>
 </div>
-<div class="floating-btns-mobile-adjust" style="position: fixed; bottom: 10px; right: 20px; z-index: 1000;">
-    <a href="https://wa.me/524422503383" target="_blank"
+<div class="floating-btns-mobile-adjust d-none d-lg-block"
+    style="position: fixed; bottom: 10px; right: 20px; z-index: 1000;">
+    <a href="https://wa.me/5215554749094" target="_blank"
         class="btn rounded-circle d-flex justify-content-center align-items-center"
         style="background-color: #25d366; color: white; width: 60px; height: 60px;"><i
             class="fab fa-whatsapp fs-4"></i></a>
@@ -540,4 +542,4 @@ if (!isset($base_url)) {
     </div>
 </div>
 
-<script src="front/general/cart.js"></script>
+<script src="front/general/cart.js?v=<?php echo time(); ?>"></script>

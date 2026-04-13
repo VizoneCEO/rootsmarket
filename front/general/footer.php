@@ -209,20 +209,32 @@
             <div class="logo-carousel">
                 <div class="logo-track">
                     <!-- Original Set -->
-                    <img src="/rootsmarket/front/multimedia/emp1.jpeg" alt="Partner 1">
-                    <img src="/rootsmarket/front/multimedia/emp2.jpeg" alt="Partner 2">
-                    <img src="/rootsmarket/front/multimedia/emp3.jpeg" alt="Partner 3">
-                    <img src="/rootsmarket/front/multimedia/emp4.jpeg" alt="Partner 4">
-                    <img src="/rootsmarket/front/multimedia/emp5.jpeg" alt="Partner 5">
-                    <img src="/rootsmarket/front/multimedia/emp6.jpeg" alt="Partner 6">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp1.jpeg"
+                        alt="Partner 1">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp2.jpeg"
+                        alt="Partner 2">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp3.jpeg"
+                        alt="Partner 3">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp4.jpeg"
+                        alt="Partner 4">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp5.jpeg"
+                        alt="Partner 5">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp6.jpeg"
+                        alt="Partner 6">
 
                     <!-- Duplicate Set (for infinite loop) -->
-                    <img src="/rootsmarket/front/multimedia/emp1.jpeg" alt="Partner 1">
-                    <img src="/rootsmarket/front/multimedia/emp2.jpeg" alt="Partner 2">
-                    <img src="/rootsmarket/front/multimedia/emp3.jpeg" alt="Partner 3">
-                    <img src="/rootsmarket/front/multimedia/emp4.jpeg" alt="Partner 4">
-                    <img src="/rootsmarket/front/multimedia/emp5.jpeg" alt="Partner 5">
-                    <img src="/rootsmarket/front/multimedia/emp6.jpeg" alt="Partner 6">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp1.jpeg"
+                        alt="Partner 1">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp2.jpeg"
+                        alt="Partner 2">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp3.jpeg"
+                        alt="Partner 3">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp4.jpeg"
+                        alt="Partner 4">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp5.jpeg"
+                        alt="Partner 5">
+                    <img src="<?php echo isset($base_url) ? $base_url : './'; ?>front/multimedia/emp6.jpeg"
+                        alt="Partner 6">
                 </div>
             </div>
         </div>

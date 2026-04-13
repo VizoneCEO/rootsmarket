@@ -440,9 +440,22 @@ try {
     }
 
     function removeCartItem(id) {
-        let cart = JSON.parse(localStorage.getItem('roots_cart')) || [];
-        cart = cart.filter(i => i.id !== id);
-        localStorage.setItem('roots_cart', JSON.stringify(cart));
+        // 1. Obtener estado actual
+        let currentCart = JSON.parse(localStorage.getItem('roots_cart')) || [];
+
+        // 2. Filtrar
+        currentCart = currentCart.filter(i => i.id !== id);
+
+        // 3. Guardar en Storage
+        localStorage.setItem('roots_cart', JSON.stringify(currentCart));
+
+        // 4. Actualizar variable GLOBAL 'cart' (definida en cart.js)
+        // Esto es CRUCIAL para que updateCartCounter() funcione bien y para que addToCart no use datos viejos
+        if (typeof cart !== 'undefined') {
+            cart = currentCart;
+        }
+
+        // 5. Renderizar
         renderCartPage();
         updateCartCounter();
     }

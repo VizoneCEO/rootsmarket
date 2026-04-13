@@ -252,18 +252,127 @@ if ($isLoggedIn) {
             fillAddress(savedAddrSelect.value);
         }
 
-        // Set Date Picker default to tomorrow
+        // Set Date Picker Logic
         const dateInput = document.getElementById('deliveryDate');
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const yyyy = tomorrow.getFullYear();
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const dd = String(tomorrow.getDate()).padStart(2, '0');
-        const minDate = `${yyyy}-${mm}-${dd}`;
+        const timeSelect = document.getElementById('deliveryTime');
 
-        dateInput.min = minDate;
-        dateInput.value = minDate; // Default select tomorrow
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+
+        // Format YYYY-MM-DD
+        const formatDate = (date) => {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        };
+
+        const todayStr = formatDate(now);
+        const tomorrowStr = formatDate(tomorrow);
+
+        // 5-Hour Rule Check
+        // If current time + 5 hours is past 20:00 (8 PM), today is NO LONGER available.
+        // 20:00 is the last slot (actually last slot might be earlier depending on closing time).
+        // Let's assume the last selectable slot is 20:00.
+        // So if now + 5h > 20:00, then today is invalid.
+
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes(); // precision if needed
+
+        let minDateStr = tomorrowStr;
+
+        // Check if we can still deliver today
+        // Rule: User needs to select a time at least 5 hours from now.
+        // Last slot is 20:00. So cutoff for today is 15:00 (3 PM).
+        // If it's 14:59, they can select 20:00.
+
+        if (currentHour < 15) {
+            minDateStr = todayStr;
+        }
+
+        dateInput.min = minDateStr;
+        dateInput.value = minDateStr; // Default select valid date
+
+        // Trigger availability check immediately
+        checkAvailability();
+
+        // Add listener for date change
+        dateInput.addEventListener('change', checkAvailability);
     });
+
+    async function checkAvailability() {
+        const dateInput = document.getElementById('deliveryDate');
+        const timeSelect = document.getElementById('deliveryTime');
+        const selectedDate = dateInput.value;
+
+        if (!selectedDate) return;
+
+        // 1. Reset all options
+        for (let i = 0; i < timeSelect.options.length; i++) {
+            timeSelect.options[i].disabled = false;
+            timeSelect.options[i].innerText = timeSelect.options[i].value < '12:00' ?
+                timeSelect.options[i].value + ' AM' :
+                (timeSelect.options[i].value == '12:00' ? '12:00 PM' :
+                    (parseInt(timeSelect.options[i].value.split(':')[0]) - 12) + ':00 PM');
+
+            // Restore original text clean logic if needed, but the loop 9-20 matches standard label logic
+        }
+
+        // 2. Fetch taken slots from backend
+        let takenSlots = [];
+        try {
+            const formData = new FormData();
+            formData.append('action', 'get_taken_slots');
+            formData.append('date', selectedDate);
+
+            const resp = await fetch('back/client_manager.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                takenSlots = data.data; // array of "HH:00" strings
+            }
+        } catch (e) {
+            console.error("Error checking slots", e);
+        }
+
+        // 3. Apply Logic
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        const isToday = (selectedDate === todayStr);
+        const currentHour = now.getHours();
+
+        for (let i = 0; i < timeSelect.options.length; i++) {
+            const opt = timeSelect.options[i];
+            const slotTime = opt.value; // "09:00", "14:00"
+            if (!slotTime) continue; // skip placeholder
+
+            const slotHour = parseInt(slotTime.split(':')[0]);
+
+            // A. Check Backend Taken Slots
+            if (takenSlots.includes(slotTime)) {
+                opt.disabled = true;
+                opt.innerText += " (Ocupado)";
+                continue;
+            }
+
+            // B. Check 5-Hour Rule (Only if Today)
+            if (isToday) {
+                // Time diff
+                // If now is 13:00, earliest slot is 18:00 (13+5)
+                if (slotHour < (currentHour + 5)) {
+                    opt.disabled = true;
+                    opt.innerText += " (Cerrado)";
+                }
+            }
+        }
+    }
 
     function togglePaymentMethod() {
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
