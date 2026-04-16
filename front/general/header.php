@@ -515,11 +515,7 @@ if (!isset($base_url)) {
 </div>
 
 
-<div class="floating-btns-mobile-adjust d-none d-lg-block"
-    style="position: fixed; bottom: 10px; left: 20px; z-index: 1000;">
-    <button class="btn rounded-pill d-flex align-items-center px-3 py-2" style="background-color:#5a9a4d; color:white;"
-        data-bs-toggle="modal" data-bs-target="#puntosModal"><i class="fas fa-gift me-2"></i> Tus puntos</button>
-</div>
+
 <div class="floating-btns-mobile-adjust d-none d-lg-block"
     style="position: fixed; bottom: 10px; right: 20px; z-index: 1000;">
     <a href="https://wa.me/5215554749094" target="_blank"
@@ -536,10 +532,6 @@ if (!isset($base_url)) {
     }
 </style>
 
-<div class="modal fade" id="puntosModal" tabindex="-1" aria-labelledby="puntosModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="margin-left: 10px; margin-right: auto;">
-        <div class="modal-content"></div>
-    </div>
-</div>
+
 
 <script src="front/general/cart.js?v=<?php echo time(); ?>"></script>

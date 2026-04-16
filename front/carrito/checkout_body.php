@@ -105,6 +105,10 @@ if ($isLoggedIn) {
                             <label class="form-label fw-bold small">Estado</label>
                             <input type="text" class="form-control" id="shippingEstado">
                         </div>
+                        <div class="col-12">
+                            <div id="map" style="height: 250px; width: 100%; border-radius: 8px; display: none;"
+                                class="mt-3"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,7 +125,7 @@ if ($isLoggedIn) {
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">Hora Aproximada</label>
                             <select class="form-select" id="deliveryTime" required>
-                                <option value="">-- Selecciona hora --</option>
+                                <option value="" disabled selected hidden>Selecciona tu hora de entrega</option>
                                 <?php
                                 for ($h = 9; $h <= 20; $h++) {
                                     $timeStr = sprintf('%02d:00', $h);
@@ -150,7 +154,7 @@ if ($isLoggedIn) {
                         <input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="cash"
                             onchange="togglePaymentMethod()">
                         <label class="form-check-label fw-bold" for="cash">
-                            Efectivo contra entrega (Máx $3,000)
+                            Efectivo contra entrega (Máx $7,000)
                         </label>
                     </div>
 
@@ -163,7 +167,7 @@ if ($isLoggedIn) {
                             </form>
                             <div id="cash-info" class="alert alert-info d-none">
                                 <i class="fas fa-money-bill-wave me-2"></i> Pagarás al recibir tu pedido. Solo válido
-                                para montos menores a $3,000 MXN.
+                                para montos menores a $7,000 MXN.
                             </div>
                         </div>
                     </div>
@@ -571,8 +575,40 @@ if ($isLoggedIn) {
             hora: document.getElementById('deliveryTime').value
         };
 
-        if (!contactData.nombre || !contactData.email || !shippingData.calle_numero || !deliveryData.fecha || !deliveryData.hora) {
-            Swal.fire('Datos incompletos', 'Por favor completa la información de contacto, envío y horario de entrega.', 'warning');
+        // Limpiar errores previos y validar
+        const fieldsToValidate = [
+            'contactNombre', 'contactTelefono', 'contactEmail',
+            'shippingCalle', 'shippingColonia', 'shippingCP',
+            'shippingCiudad', 'shippingEstado', 'deliveryDate', 'deliveryTime'
+        ];
+        
+        let hasError = false;
+        let firstErrorField = null;
+
+        fieldsToValidate.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Forzar limpieza
+                field.style.border = '';
+                field.style.boxShadow = '';
+                
+                if (!field.value.trim()) {
+                    // Forzar el pintado por si Bootstrap falla
+                    field.style.border = '2px solid #dc3545';
+                    field.style.boxShadow = '0 0 0 0.25rem rgba(220, 53, 69, 0.25)';
+                    
+                    hasError = true;
+                    if (!firstErrorField) firstErrorField = field;
+                }
+            }
+        });
+
+        if (hasError) {
+            Swal.fire('Datos incompletos', 'Por favor llena los campos marcados en rojo antes de continuar.', 'warning');
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstErrorField.focus();
+            }
             return;
         }
 
@@ -667,8 +703,8 @@ if ($isLoggedIn) {
 
         } else if (paymentMethod === 'cash') {
             // Cash Payment
-            if (total > 3000) {
-                Swal.fire('Límite Excedido', 'Los pagos en efectivo están limitados a $3,000 MXN. Por favor usa tarjeta.', 'warning');
+            if (total > 7000) {
+                Swal.fire('Límite Excedido', 'Los pagos en efectivo están limitados a $7,000 MXN. Por favor usa tarjeta.', 'warning');
                 return;
             }
 
@@ -792,5 +828,97 @@ if ($isLoggedIn) {
                 msg.textContent = 'Error al validar el código';
                 msg.className = 'small mt-1 text-danger';
             });
+    }
+</script>
+
+<!-- Google Maps Integration -->
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAs5nizMiVRkA5MMpd0xQGMfQMKOeYGTiY&libraries=places&callback=initMap"></script>
+<script>
+    let map;
+    let marker;
+    let autocomplete;
+
+    function initMap() {
+        // Querétaro default coordinates
+        const defaultLocation = { lat: 20.5888, lng: -100.3899 };
+
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: defaultLocation,
+            zoom: 12,
+        });
+
+        marker = new google.maps.Marker({
+            map: map,
+            position: defaultLocation,
+            draggable: false
+        });
+
+        const input = document.getElementById("shippingCalle");
+
+        autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: "mx" },
+            fields: ["address_components", "geometry", "name"],
+        });
+
+        autocomplete.addListener("place_changed", fillInAddress);
+    }
+
+    function fillInAddress() {
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) {
+            return;
+        }
+
+        // Mostrar mapa y centrar en la ubicación seleccionada
+        document.getElementById('map').style.display = 'block';
+
+        if (place.geometry.viewport) {
+            map.fitBounds(place.geometry.viewport);
+        } else {
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);
+        }
+        marker.setPosition(place.geometry.location);
+
+        // Limpiar campos primero
+        document.getElementById('shippingColonia').value = '';
+        document.getElementById('shippingCP').value = '';
+        document.getElementById('shippingCiudad').value = '';
+        document.getElementById('shippingEstado').value = '';
+
+        let route = '';
+        let streetNumber = '';
+
+        // Autocompletar basado en address_components
+        for (const component of place.address_components) {
+            const componentType = component.types[0];
+
+            switch (componentType) {
+                case "street_number":
+                    streetNumber = component.long_name;
+                    break;
+                case "route":
+                    route = component.long_name;
+                    break;
+                case "postal_code":
+                    document.getElementById('shippingCP').value = component.long_name;
+                    break;
+                case "sublocality_level_1":
+                case "neighborhood":
+                    document.getElementById('shippingColonia').value = component.long_name;
+                    break;
+                case "locality":
+                    document.getElementById('shippingCiudad').value = component.long_name;
+                    break;
+                case "administrative_area_level_1":
+                    document.getElementById('shippingEstado').value = component.long_name;
+                    break;
+            }
+        }
+
+        // Poner la calle y número combinados en el input
+        document.getElementById('shippingCalle').value = route + (streetNumber ? ' ' + streetNumber : '');
     }
 </script>

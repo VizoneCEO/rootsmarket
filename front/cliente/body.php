@@ -137,6 +137,11 @@
             border-style: solid;
             border-color: #F39C12 transparent transparent transparent;
         }
+
+        /* Fix for Google Places Autocomplete inside Bootstrap Modal */
+        .pac-container {
+            z-index: 1060 !important;
+        }
     </style>
 
     <div class="container my-5">
@@ -150,7 +155,6 @@
                     <a href="#" class="profile-link" onclick="showSection('pedidos', this)">Mis Pedidos</a>
                     <a href="#" class="profile-link" onclick="showSection('direcciones', this)">Mis Direcciones</a>
                     <!-- <a href="#" class="profile-link" onclick="showSection('progreso', this)">Mi Progreso</a> -->
-                    <a href="#" class="profile-link" onclick="showSection('ayuda', this)">Ayuda</a>
                     <div class="border-top mt-3 pt-3">
                         <a href="../../back/login/aut.php?action=logout" class="profile-link text-danger">Salir</a>
                     </div>
@@ -163,6 +167,12 @@
 
                     <!-- 1. MIS DATOS PERSONALES -->
                     <div id="section-personal" class="profile-section">
+                        <?php
+                        // Fetch saved addresses to display in dropdown
+                        $stmtAddrObj = $pdo->prepare("SELECT * FROM direcciones_envio WHERE user_id = ? ORDER BY es_principal DESC");
+                        $stmtAddrObj->execute([$user['id']]);
+                        $personalAddresses = $stmtAddrObj->fetchAll(PDO::FETCH_ASSOC);
+                        ?>
                         <h2 class="fw-bold mb-1">Hola,</h2>
                         <h2 class="fw-bold mb-4"><?php echo htmlspecialchars($user['nombre']); ?></h2>
                         <!-- Apellido could be split if available -->
@@ -194,13 +204,45 @@
                                 <div class="col-md-4">
                                     <label class="form-label-custom">Teléfono</label>
                                     <input type="text" id="inputTelefono" class="form-control form-control-custom"
-                                        value="<?php echo htmlspecialchars($user['telefono'] ?? ''); ?>">
+                                        value="<?php echo htmlspecialchars($user['telefono'] ?? ''); ?>" list="phonesList">
+                                    <datalist id="phonesList">
+                                        <?php 
+                                        $uniquePhones = [];
+                                        foreach($personalAddresses as $addr) {
+                                            if(!empty($addr['telefono_contacto']) && !in_array($addr['telefono_contacto'], $uniquePhones)) {
+                                                $uniquePhones[] = $addr['telefono_contacto'];
+                                                echo '<option value="'.htmlspecialchars($addr['telefono_contacto']).'">';
+                                            }
+                                        }
+                                        ?>
+                                    </datalist>
+                                    <small class="text-muted">Escribe o selecciona un número guardado.</small>
                                 </div>
                             </div>
 
-                            <div class="row g-3 mb-3">
+                            <div class="row g-3 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label-custom">Dirección (para Facturación)</label>
+                                    <select class="form-select form-control-custom" id="selectSavedAddress" onchange="handlePersonalAddressChange()">
+                                        <option value="">Selecciona una dirección de facturación...</option>
+                                        <?php foreach($personalAddresses as $addr): ?>
+                                            <option value="<?php echo htmlspecialchars(json_encode([
+                                                'calle' => $addr['calle_numero'],
+                                                'ciudad' => $addr['ciudad'],
+                                                'estado' => $addr['estado']
+                                            ])); ?>">
+                                                <?php echo htmlspecialchars($addr['alias'] . ' - ' . $addr['calle_numero'] . ', ' . $addr['ciudad']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                        <option value="nueva">Otra dirección... (Nueva)</option>
+                                    </select>
+                                    <small class="text-muted">Selecciona "Otra dirección..." para buscar en el mapa.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-3 mb-3" id="personalAddressFields">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom">Dirección</label>
+                                    <label class="form-label-custom">Calle y Número <span class="text-danger" id="newAddrHint" style="display:none;">(Busca en el mapa)</span></label>
                                     <input type="text" id="inputDireccion" class="form-control form-control-custom"
                                         value="<?php echo htmlspecialchars($user['direccion'] ?? ''); ?>">
                                 </div>
@@ -213,6 +255,9 @@
                                     <label class="form-label-custom">Estado</label>
                                     <input type="text" id="inputEstado" class="form-control form-control-custom"
                                         value="<?php echo htmlspecialchars($user['estado'] ?? ''); ?>">
+                                </div>
+                                <div class="col-12" id="personalMapContainer" style="display: none;">
+                                    <div id="map-personal-data" style="height: 250px; width: 100%; border-radius: 8px;" class="mt-2"></div>
                                 </div>
                             </div>
 
@@ -445,13 +490,15 @@
                                                 <input type="text" class="form-control rounded-pill" id="addrTelefono"
                                                     value="<?php echo htmlspecialchars($user['telefono'] ?? ''); ?>">
                                             </div>
+
+                                            <div class="col-6">
+                                                <label class="form-label fw-bold small">Calle y Número</label>
+                                                <input type="text" class="form-control rounded-pill" id="addrCalle"
+                                                    placeholder="Ej.Dirección">
+                                            </div>
                                             <div class="col-md-6">
                                                 <label class="form-label fw-bold small">Código Postal</label>
                                                 <input type="text" class="form-control rounded-pill" id="addrCP">
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label fw-bold small">Calle y Número</label>
-                                                <input type="text" class="form-control rounded-pill" id="addrCalle">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-bold small">Colonia</label>
@@ -466,6 +513,11 @@
                                                 <label class="form-label fw-bold small">Estado</label>
                                                 <input type="text" class="form-control rounded-pill" id="addrEstado"
                                                     value="<?php echo htmlspecialchars($user['estado'] ?? ''); ?>">
+                                            </div>
+                                            <div class="col-12">
+                                                <div id="map-profile"
+                                                    style="height: 250px; width: 100%; border-radius: 8px; display: none;"
+                                                    class="mt-3"></div>
                                             </div>
                                             <div class="col-12 mt-3">
                                                 <div class="form-check">
@@ -489,11 +541,7 @@
                     </div>
                 </div>
 
-                <!-- 6. AYUDA (Placeholder) -->
-                <div id="section-ayuda" class="profile-section" style="display: none;">
-                    <h4 class="fw-bold mb-4">Ayuda</h4>
-                    <p>¿Tienes dudas? Contáctanos.</p>
-                </div>
+
             </div>
         </div>
     </div>
@@ -532,6 +580,30 @@
             showSection(section);
         }
     });
+
+    function handlePersonalAddressChange() {
+        const val = document.getElementById('selectSavedAddress').value;
+        const inputDirEl = document.getElementById('inputDireccion');
+        const newAddrHint = document.getElementById('newAddrHint');
+        const mapContainer = document.getElementById('personalMapContainer');
+        
+        if (val === 'nueva') {
+            inputDirEl.value = '';
+            document.getElementById('inputCiudad').value = '';
+            document.getElementById('inputEstado').value = '';
+            inputDirEl.placeholder = 'Escribe para buscar...';
+            newAddrHint.style.display = 'inline';
+            mapContainer.style.display = 'none';
+        } else if (val) {
+            const parsed = JSON.parse(val);
+            inputDirEl.value = parsed.calle;
+            document.getElementById('inputCiudad').value = parsed.ciudad;
+            document.getElementById('inputEstado').value = parsed.estado;
+            inputDirEl.placeholder = '';
+            newAddrHint.style.display = 'none';
+            mapContainer.style.display = 'none';
+        }
+    }
 
     function savePersonalData() {
         const data = new FormData();
@@ -821,6 +893,8 @@
     function resetAddressForm() {
         document.getElementById('addressForm').reset();
         document.getElementById('addressId').value = '';
+        const mapEl = document.getElementById('map-profile');
+        if (mapEl) mapEl.style.display = 'none';
     }
 
     function saveAddress() {
@@ -953,3 +1027,158 @@
     </div>
 </div>
 </div>
+
+<!-- Google Maps Integration Profile -->
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAs5nizMiVRkA5MMpd0xQGMfQMKOeYGTiY&libraries=places&callback=initProfileMap"></script>
+<script>
+    let profileMap;
+    let profileMarker;
+    let profileAutocomplete;
+
+    function initProfileMap() {
+        const defaultLocation = { lat: 20.5888, lng: -100.3899 };
+
+        profileMap = new google.maps.Map(document.getElementById("map-profile"), {
+            center: defaultLocation,
+            zoom: 12,
+        });
+
+        profileMarker = new google.maps.Marker({
+            map: profileMap,
+            position: defaultLocation,
+            draggable: false
+        });
+
+        const input = document.getElementById("addrCalle");
+
+        profileAutocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: "mx" },
+            fields: ["address_components", "geometry", "name"],
+        });
+
+        profileAutocomplete.addListener("place_changed", fillInProfileAddress);
+
+        const addressModalEl = document.getElementById('addressModal');
+        if (addressModalEl) {
+            addressModalEl.addEventListener('shown.bs.modal', function () {
+                google.maps.event.trigger(profileMap, "resize");
+                if (document.getElementById('map-profile').style.display !== 'none') {
+                    profileMap.setCenter(profileMarker.getPosition() || defaultLocation);
+                }
+            });
+        }
+        
+        // --- init Personal Data autocomplete ---
+        initPersonalDataAutocomplete();
+    }
+    
+    let personalDataMap;
+    let personalDataMarker;
+
+    function initPersonalDataAutocomplete() {
+        const input = document.getElementById("inputDireccion");
+        if (!input) return;
+
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: "mx" },
+            fields: ["address_components", "geometry", "name"],
+        });
+
+        autocomplete.addListener("place_changed", function() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) return;
+
+            const mapContainer = document.getElementById('personalMapContainer');
+            mapContainer.style.display = 'block';
+
+            if (!personalDataMap) {
+                const mapEl = document.getElementById("map-personal-data");
+                personalDataMap = new google.maps.Map(mapEl, {
+                    zoom: 17,
+                    center: place.geometry.location,
+                });
+                personalDataMarker = new google.maps.Marker({
+                    map: personalDataMap,
+                    position: place.geometry.location,
+                });
+            } else {
+                google.maps.event.trigger(personalDataMap, "resize");
+                if (place.geometry.viewport) {
+                    personalDataMap.fitBounds(place.geometry.viewport);
+                } else {
+                    personalDataMap.setCenter(place.geometry.location);
+                    personalDataMap.setZoom(17);
+                }
+                personalDataMarker.setPosition(place.geometry.location);
+            }
+
+            let route = '', streetNumber = '', ciudad = '', estado = '';
+            for (const component of place.address_components) {
+                const componentType = component.types[0];
+                if (componentType === "street_number") streetNumber = component.long_name;
+                if (componentType === "route") route = component.long_name;
+                if (componentType === "locality") ciudad = component.long_name;
+                if (componentType === "administrative_area_level_1") estado = component.long_name;
+            }
+            
+            document.getElementById("inputDireccion").value = route + (streetNumber ? ' ' + streetNumber : '');
+            document.getElementById("inputCiudad").value = ciudad;
+            document.getElementById("inputEstado").value = estado;
+        });
+    }
+
+    function fillInProfileAddress() {
+        const place = profileAutocomplete.getPlace();
+
+        if (!place.geometry) {
+            return;
+        }
+
+        document.getElementById('map-profile').style.display = 'block';
+
+        if (place.geometry.viewport) {
+            profileMap.fitBounds(place.geometry.viewport);
+        } else {
+            profileMap.setCenter(place.geometry.location);
+            profileMap.setZoom(17);
+        }
+        profileMarker.setPosition(place.geometry.location);
+
+        document.getElementById('addrColonia').value = '';
+        document.getElementById('addrCP').value = '';
+        document.getElementById('addrCiudad').value = '';
+        document.getElementById('addrEstado').value = '';
+
+        let route = '';
+        let streetNumber = '';
+
+        for (const component of place.address_components) {
+            const componentType = component.types[0];
+
+            switch (componentType) {
+                case "street_number":
+                    streetNumber = component.long_name;
+                    break;
+                case "route":
+                    route = component.long_name;
+                    break;
+                case "postal_code":
+                    document.getElementById('addrCP').value = component.long_name;
+                    break;
+                case "sublocality_level_1":
+                case "neighborhood":
+                    document.getElementById('addrColonia').value = component.long_name;
+                    break;
+                case "locality":
+                    document.getElementById('addrCiudad').value = component.long_name;
+                    break;
+                case "administrative_area_level_1":
+                    document.getElementById('addrEstado').value = component.long_name;
+                    break;
+            }
+        }
+
+        document.getElementById('addrCalle').value = route + (streetNumber ? ' ' + streetNumber : '');
+    }
+</script>

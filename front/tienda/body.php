@@ -592,7 +592,7 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 <!-- ================= DESKTOP VIEW (Existing) ================= -->
 <div class="container my-5 d-none d-lg-block">
 
-    <h2 class="text-center fw-bold mb-4" style="color: #333;">Bienvenido a tu espacio orgánico</h2>
+    <h2 class="text-center fw-bold mb-4" style="color: #333;">Bienvenido a tu espacio de productos sanos</h2>
     <hr class="mb-5">
 
     <!-- FILTERS ROW with BUTTONS INLINE -->
@@ -840,6 +840,12 @@ $pastel_colors = ['#E8F5E9', '#FFFDE7', '#FFEBEE', '#E3F2FD', '#F3E5F5', '#E0F2F
 
         if (textoBusqueda.trim() !== '') {
             url += 'q=' + encodeURIComponent(textoBusqueda.trim()) + '&';
+        }
+
+        // Preservar el filtro especial activo (mejores, temporada, promocion)
+        const filtroActual = "<?php echo $filtro_especial ?? ''; ?>";
+        if (filtroActual) {
+            url += 'filter=' + encodeURIComponent(filtroActual) + '&';
         }
 
         // Redirigir (Esto hace la búsqueda en el servidor para soportar 500k productos)
