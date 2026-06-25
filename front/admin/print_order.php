@@ -248,7 +248,7 @@ $qr_url = "https://quickchart.io/qr?text=" . urlencode($qr_data) . "&size=150";
         <!-- Footer -->
         <div class="text-center mt-5 pt-4 border-top">
             <p class="mb-1 fw-bold">¡Gracias por tu compra!</p>
-            <p class="small text-muted">¿Dudas con tu pedido? Contáctanos al 442-250-3383</p>
+            <p class="small text-muted">¿Dudas con tu pedido? Contáctanos al 442 343 6827</p>
         </div>
 
     </div>
